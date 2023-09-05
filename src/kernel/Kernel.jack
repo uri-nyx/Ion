@@ -1,0 +1,16 @@
+/* ION kernel */
+
+class Kernel {
+    function int main () {
+        //do TextMode.setCursor(0, 4);
+        do TextMode.init();
+        do TextMode.print("Hello World!");
+        do TextMode.println();
+        do TextMode.printi(55);
+        return 0xa;
+    }
+
+    function void interrupt_handler () {
+        return;
+    }
+}
