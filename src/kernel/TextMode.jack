@@ -21,25 +21,30 @@ class TextMode {
             charBuffer#[curr] = s#[i];
             charBuffer#[curr + 1] = attribute;
         }
+        return;
     }
 
-    function void println () {
+    function void printLn () {
         let cursorY += 1; cursorX = cursorY * COLS;
         return;
     }
 
-    function void printi (int i) {
-        if ((i >= 0) && (i <= 9)) { // Remember ther's no operator precedence
+    function void printInt (int i) {
+        if (i < 0) {
+            // deal with negative nums
+            do TextMode.print("-");
+            do TextMode.printInt(-i);
+        } else if ((i >= 0) && (i <= 9)) { // Remember ther's no operator precedence
             var int curr;
             let curr = cursorX << 1;
             charBuffer#[curr] = '0' + i; 
             charBuffer#[curr + 1] = attribute;
-        } 
-        else {
+            cursorX += 1;
+        } else {
             var int rem;
             let rem = i % 10, i /= 10;
-            do TextMode.printi(i);
-            do TextMode.printi(rem);
+            do TextMode.printInt(i);
+            do TextMode.printInt(rem);
         }
         return;
     }

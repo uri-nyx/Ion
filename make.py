@@ -1,13 +1,14 @@
 """MAKE: A simple and provisional build script for ION.
 
 Usage:
-  make.py [-hcas] [-n=<name>]
+  make.py [-hcas] [-l=<file>...] [-n=<name>]
 
 Options:
   -h                Show this screen.
-  -c                Only compile jack files.
-  -a                Only assemble.
-  -s                Only emit symbols.
+  -l=<file>...      Link library        
+  -c                Compile jack files.
+  -a                Assemble.
+  -s                Emit symbols.
   -n=<name>         name of image file [default: ion].
 """
 
@@ -16,8 +17,8 @@ import os
 from os.path import isfile, join, splitext
 
 DEBUG = ""
-AS = "customasm utils/assembler/master.asm utils/assembler/sys.asm"
-TALLUM = "python3 utils/tallum/tallum.py sft -O --std=tal"
+AS = "customasm utils/assembler/master.asm utils/assembler/sys.asm -q"
+TALLUM = "python3 utils/tallum/tallum.py sft --std=tal"
 COMPILER = "node utils/JackCompiler/JackCompiler.js -x"
 FORMAT = " -f binary"
 BIN    = "bin/"
@@ -27,9 +28,21 @@ SRC    = "src/"
 JACK   = SRC + "kernel/"
 VM     = JACK + "vm/"
 KERNEL = JACK + "out/"
+STD    = "utils/std/"
+
+def link(lib: str):
+    print("Linking lib ", lib)
+    path = f"{STD}{lib}.jack"
+    errorcode = os.system(f"{COMPILER} {path}")
+    if (errorcode != 0): exit(1)
+    errorcode = os.system(f"mv {STD+lib}.vm {VM}")
+    if (errorcode != 0): exit(1)
+    
+    
 
 def compile_():
     errorcode = os.system(f"{COMPILER} {JACK}")
+    if (errorcode != 0): exit(1)
     errorcode = os.system(f"mv {JACK}*.vm {VM}")
     if (errorcode != 0): exit(1)
     vm_files = [f for f in os.listdir(VM) if isfile(join(VM, f)) and splitext(join(VM, f))[1] == ".vm"]
@@ -47,6 +60,7 @@ def compile_():
 def assemble():
     asm_files = [f for f in os.listdir(SRC) if isfile(join(SRC, f)) and splitext(join(SRC, f))[1] == ".s"]
     for f in asm_files:
+        print("Assembling " + f)
         errorcode = os.system(f"{AS} {SRC}{f} {DEBUG} {FORMAT} -o {BIN + splitext(f)[0]}.bin")
         if (errorcode != 0): exit(1)
 
@@ -78,6 +92,8 @@ def image(name: str):
     
 if __name__ == "__main__":
     arguments = docopt(__doc__)
+    for lib in arguments["-l"]:
+        link(lib)
     if arguments["-c"]:
         compile_()
     if arguments["-s"]:

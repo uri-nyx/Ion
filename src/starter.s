@@ -85,6 +85,8 @@ swd s8, jack.CALLSTACK(zero)
 ; jump to the Kernel, allways following the Jack call convention.
 
 int.set t5, t6
+li t0, 2
+priority t0, t5, t6
 push ra, s8
 save s2, s7, s8
 subi s3, s2, 4

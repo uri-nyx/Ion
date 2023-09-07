@@ -42,7 +42,7 @@ ISR_BASIC:
     push s9, s2
     addi s4, s2, 0
     subi s3, s2, 4
-    call Kernel.interrupt_handler
+    call Kernel.interruptHandler
     pop ra, s8
     int.set t5, t6
 sysret
