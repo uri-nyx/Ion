@@ -1,8 +1,9 @@
 **/*.vm
 /.vscode
 /utils/assembler
-/utils/compiler
-
+/utils/JackCompiler
+/utils/tallum
+/venv
 ### macOS ###
 # General
 .DS_Store
@@ -35,3 +36,5 @@ Temporary Items
 ### macOS Patch ###
 # iCloud generated files
 *.icloud
+
+

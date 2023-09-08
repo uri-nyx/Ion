@@ -7,7 +7,7 @@ class Memory {
     const  HEADER_SIZE = 8; // header of block is 8 bytes (2 words) long
     static int Kfree, Kheap, Kend;
     static int Ufree, Uheap, Uend;
-    static bool kernel;
+    static boolean kernel;
 
     /** Initializes the heap for the Kernel. */
     function void kinit(int heapBase, int end) {
@@ -56,52 +56,57 @@ class Memory {
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
-        var int best, curr, target;
-        curr = kernel ? Kfree : Ufree;  // Handle Kernel and user heap differently
-        let best = curr, target = size + HEADER_SIZE;
+        var int best, curr, second, target;
+        let target = size + (HEADER_SIZE * 2); 
+        // the target block has to have room for 2 headers
+        let curr = (kernel) ? Kfree : Ufree;
+        let best = curr, second = curr;
+        do TextMode.print(" Trying to allocate ");
+        do TextMode.printInt(size);
+        do TextMode.print(" bytes: ");
         while (curr ~= null) {
-            // Iterate until we find the end of the linked list
-            do TextMode.print(" target -> ");
-            do TextMode.printInt(target);
-            do TextMode.print(" best -> ");
-            do TextMode.printInt(best[1]);
-            do TextMode.print(" (");
-            do TextMode.printInt(best);
-            do TextMode.print(")");
-
-            if (curr[1] = target) {
-                // If we find a perfect match, break
-                best = curr;
-                break;
-            }
+            // greedy
+            do Sys.trace(curr[1]);
+            do Sys.trace(best[1]);
+// ry with next
             if ((curr[1] > target) && (curr[1] < best[1])) {
-                // If the current block is possible, check if it is
-                // smaller than the best one we've found. If so, replace it
                 best = curr;
-                do TextMode.print(" new -> ");
+                do TextMode.print(" found best ");
+                do TextMode.printInt(best);
+                do TextMode.print(" size ");
                 do TextMode.printInt(best[1]);
+                do TextMode.printLn();
+            } else if (curr[1] >= target) {
+                best = curr;
+                do TextMode.print(" found at ");
+                do TextMode.printInt(best);
+                do TextMode.print(" size ");
+                do TextMode.printInt(best[1]);
+                do TextMode.printLn();
             }
-            do TextMode.printLn();
+                
             curr = curr[0];
         }
-        if (best = null) return null;   // If we did not found a block, allocation failed
-        do TextMode.print("Found Block at ");
-        do TextMode.printInt(best);
-        curr = best;      // apropiate of address of best block
-        best = best + size + HEADER_SIZE;  // truncate the block we found to form a new one
-        best[0] = curr[0];
-        best[1] = curr[1] - target; // hackish, but works not to have another var
-        //do Sys.trace(best);
-        curr[0] = ALLOCATED; // remove from free list and sign as allocated
-        curr[1] = size; // add size header
-        if (kernel) Kfree = best;   // redefine free pointer
-        else        Ufree = best;
-        do TextMode.print(" ::");
-        do TextMode.printInt(curr + HEADER_SIZE);
-        do TextMode.print(" Kfree ");
-        do TextMode.printInt(Kfree);
-        do TextMode.printLn();
-        return curr + HEADER_SIZE;
+        if (kernel) {
+            Kfree = best + size + HEADER_SIZE;
+            do TextMode.print("Updated Kfree: ");
+            do TextMode.printInt(Kfree);
+            //while (true) { next = 0;}
+            Kfree[0] = best[0];
+            Kfree[1] = best[1] - (size + HEADER_SIZE);
+            do TextMode.print("; remaining ");
+            do TextMode.printInt(Kfree[1]);
+            do TextMode.print("; next ");
+            do TextMode.printInt(Kfree[0]);
+            do TextMode.printLn();
+        } else {
+            Ufree = size + HEADER_SIZE;
+            Ufree[0] = best[0];
+            Ufree[1] = best[1] - (size + HEADER_SIZE);
+        }
+        best[0] = ALLOCATED;
+        best[1] = size + HEADER_SIZE;
+        return best + HEADER_SIZE;
     }
 
     /** De-allocates the given object (cast as an array) by making
@@ -124,28 +129,37 @@ class Memory {
                 
             // insert after immediately less addressed segment
             let prev[0] = segment, segment[0] = next;
-            do TextMode.print(" Prev -> ");
-            do TextMode.printInt(prev);
-            do TextMode.print(" Segment -> ");
-            do TextMode.printInt(segment);
-            do TextMode.print(" Next -> ");
-            do TextMode.printInt(next);
-            do TextMode.printLn();
 
             // Combine segment with next_seg if contiguous.
             if ((segment + segment[1] + HEADER_SIZE) = next) {
                 segment[1] = segment[1] + next[1] + HEADER_SIZE;
                 segment[0] = next[0];
+                do TextMode.print(" merge ");
+                do TextMode.printInt(segment);
+                do TextMode.print(" with next ");
+                do TextMode.printInt(next);
             }
 
             // Combine segment with prev_seg if contiguous.
-            if ((prev + prev[1] + HEADER_SIZE) = segment)
+            if ((prev + prev[1] + HEADER_SIZE) = segment) {
                 prev[1] = prev[1] + segment[1] + HEADER_SIZE;
                 prev[0] = segment[0];
+                do TextMode.print(" combine ");
+                do TextMode.printInt(prev);
+                do TextMode.print(" with ");
+                do TextMode.printInt(segment);
+                do TextMode.printLn();
+            }
     
         }
+        do TextMode.printLn();
         do TextMode.print(" Deallocation successful ");
         do TextMode.printInt(Kfree);
+        do TextMode.print(" (");
+        do TextMode.printInt(Kfree[1]);
+        do TextMode.print(":");
+        do TextMode.printInt(Kfree[0]);
+        do TextMode.print(":)");
         do TextMode.printLn();
         return;
     }

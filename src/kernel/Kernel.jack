@@ -17,13 +17,11 @@ class Kernel {
         var Array a, b, c;
         do Memory.kinit(HEAP, HEAP_END);
         a = Array.new(400*4);
-        do Memory.traverse();
         if (a = null) { 
             do TextMode.print("Allocation of array A failed");
             do TextMode.printLn();
         }
         b = Array.new(200*4);
-        do Memory.traverse();
         if (b = null) { 
             do TextMode.print("Allocation of array B failed");
             do TextMode.printLn();
@@ -34,22 +32,18 @@ class Kernel {
         /*for (var int i; i = 0; i < 10; i+=1) {
             //do TextMode.printInt(b[i]);
             //do TextMode.print(" ");
-        }*/
+        }
+        */
         //do TextMode.print("END.");
         //do TextMode.printLn();
         do a.dispose();
-        do Memory.traverse();
         let c = Array.new(250*4);
-        do Memory.traverse();
         if (c = null) { 
             do TextMode.print("Allocation of array C failed");
             do TextMode.printLn();
         }
         do b.dispose();
-        do Memory.traverse();
         do c.dispose(); //Null pointer dereference
-        do Memory.traverse();
-        //*/
         return;
     }
 

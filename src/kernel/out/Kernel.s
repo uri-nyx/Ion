@@ -89,15 +89,6 @@ pop ra, s8
 ; pop local 2
 sw s9, -8(s3)
 pop s9, s2
-; call Memory.traverse 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call Memory.traverse
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
 ; push local 2
 push s9, s2
 lw s9, -8(s3)
@@ -159,15 +150,6 @@ call Array.new
 pop ra, s8
 ; pop local 3
 sw s9, -12(s3)
-pop s9, s2
-; call Memory.traverse 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call Memory.traverse
-pop ra, s8
-; pop temp 0
-mv t0, s9
 pop s9, s2
 ; push local 3
 push s9, s2
@@ -409,15 +391,6 @@ pop ra, s8
 ; pop temp 0
 mv t0, s9
 pop s9, s2
-; call Memory.traverse 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call Memory.traverse
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
 ; push constant 250
 push s9, s2
 li s9, 250
@@ -437,15 +410,6 @@ call Array.new
 pop ra, s8
 ; pop local 4
 sw s9, -16(s3)
-pop s9, s2
-; call Memory.traverse 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call Memory.traverse
-pop ra, s8
-; pop temp 0
-mv t0, s9
 pop s9, s2
 ; push local 4
 push s9, s2
@@ -503,15 +467,6 @@ pop ra, s8
 ; pop temp 0
 mv t0, s9
 pop s9, s2
-; call Memory.traverse 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call Memory.traverse
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
 ; push local 4
 push s9, s2
 lw s9, -16(s3)
@@ -522,15 +477,6 @@ push s9, s2
 addi s4, s2, 0
 subi s3, s2, 4
 call Array.dispose
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; call Memory.traverse 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call Memory.traverse
 pop ra, s8
 ; pop temp 0
 mv t0, s9
