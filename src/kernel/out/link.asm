@@ -1,7 +1,7 @@
 #include "Kernel.s"
 #include "Array.s"
+#include "Context.s"
 #include "Memory.s"
 #include "Process.s"
 #include "Scheduler.s"
-#include "Context.s"
 #include "TextMode.s"
