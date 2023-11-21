@@ -2,24 +2,41 @@
  * This library provides two services: direct access to the computer's main
  * memory (RAM), and allocation and recycling of memory blocks.
  */ 
-class Memory {
-    const  ALLOCATED = 0x80000000, FREE = 0x7fffffff;
-    const  HEADER_SIZE = 12; // header of block is 8 bytes (2 words) long
-    const  FOOTER_SIZE = 4;  // A footer of 4 bytes
-    const  next = 1, prev = 2, size = 0; // Struct fields
+ class Memory {
+    const  ALLOCATED = -2;  // Signature of allocated blocks
+    const  HEADER_SIZE = 8; // header of block is 8 bytes (2 words) long
     static int Kfree, Kheap, Kend;
     static int Ufree, Uheap, Uend;
     static boolean kernel;
 
+    static int memory;
+    static int heap;
+    static int heapSize;
+    static int freeListHead;
+    static int freeListTail;
+  
+    function void minit() {
+      var Array block;
+  
+      let heap = 0xfc0000;
+      let heapSize = 0xffcc00 - heap;
+      let freeListHead = heap;
+      let freeListTail = 0xffcc00;
+      let block = heap + HEADER_SIZE;
+      let block[0] = heapSize - (HEADER_SIZE * 2);
+      let block[1] = freeListTail;
+      let freeListHead[0] = HEADER_SIZE;
+      let freeListHead[1] = block;
+      let freeListTail[0] = HEADER_SIZE;
+      let freeListTail[1] = null;
+      return;
+    }
+
     /** Initializes the heap for the Kernel. */
     function void kinit(int heapBase, int end) {
-        var int total;
         let Kheap = heapBase, Kend = end, Kfree = Kheap, kernel = true;
-        let total = Kend - Kheap - HEADER_SIZE - FOOTER_SIZE;
-        let Kfree[size] = FREE | total; // size of heap on start
-        let Kfree[next] = null; // next pointer in linked list
-        let Kfree[prev] = null; // prev pointer in linked list
-        let Kfree[total + HEADER_SIZE] = FREE & total;
+        let Kfree[0] = null; // next pointer in linked list
+        let Kfree[1] = Kend - Kheap - HEADER_SIZE; // size of heap on start
         return;
     }
 
@@ -31,13 +48,9 @@ class Memory {
 
     /** Initializes the class for user code. */
     function void init() {
-        var int total;
         let Ufree = Uheap;
-        let total = Uend - Uheap - HEADER_SIZE - FOOTER_SIZE;
-        let Ufree[size] = FREE | total; // size of heap on start
-        let Ufree[next] = null; // next pointer in linUed list
-        let Ufree[prev] = null; // prev pointer in linUed list
-        let Ufree[total + HEADER_SIZE] = FREE & total;
+        let Ufree[0] = null;
+        let Ufree[1] = Uend - Uheap - HEADER_SIZE;
         return;
     }
 
@@ -63,40 +76,100 @@ class Memory {
         return;
     }
     
-    /** Finds an available RAM block of the given size and returns
-     *  a reference to its base address. */
-    function int alloc(int size) {
-    }
-
-    /** De-allocates the given object (cast as an array) by making
-     *  it available for future allocations. */
-    function void deAlloc(Array o) {
-        var int block, P, S, tail;
-        let block = o - HEADER_SIZE;
-        if (!(block - 4) >= 0) { // if positive, free
-            P = block - !(block - 4) - HEADER_SIZE;
-            tail = Memory.getTail(P);
-            P[size] += block[size];
-            P[next] = block[next];
-            P[tail] = FREE & P[size];
-
+    function Array alloc(int size) {
+        var Array currentPointer;
+        var Array result;
+        var Array temp;
+    
+        if(size < 1) {
+          do TextMode.print("Size must be a positive integer");
+          do TextMode.printLn();
+          return null;
         }
 
-        Kfree = block;
-
-        tail = Memory.getTail(block);
-        if (block[tail] >= 0) {
-            S = block + tail + 4;
-            tail = Memory.getTail(S);
-            block[size] += S[size];
-            block[next] = S[next];
-            S[tail] = FREE & S[size];
+        if((size + HEADER_SIZE) > heapSize) {
+          do TextMode.print("Cannot alloc more than 248000 bytes");
+          do TextMode.printLn();
+          return null;
+        }
+    
+        let currentPointer = freeListHead[1];
+        while(true) {
+          if(currentPointer = freeListTail) {
+            do TextMode.print("No allocation possible");
+            do TextMode.printLn();
+            return null;
+          }
+          if(currentPointer[0] > (size + HEADER_SIZE)) {
+            let temp = (currentPointer[0] - (size + 4)) + currentPointer;
+            let temp[0] = size + 4;
+            let result = temp + 4;
+            let currentPointer[0] = currentPointer[0] - (size + 4);
+            do TextMode.print("Allocated block at ");
+            do TextMode.printInt(result);
+            do TextMode.printLn();
+            return result;
+          }
+          let currentPointer = currentPointer[1];
+        } 
+      }
+    
+      function void deAlloc(Array o) {
+        var Array newNode;
+        var Array previous;
+        var Array current;
+    
+        let newNode = o - 4;
+        let previous = freeListHead;
+        let current = previous[1];
+    
+        while(true) {
+          if(current > newNode) {
+            let newNode[1] = current;
+            let previous[1] = newNode;
+            do Memory.mergeBlocks(newNode, current);
+            do Memory.mergeBlocks(previous, newNode);
+            do TextMode.print("Deallocated block at ");
+            do TextMode.printInt(o);
+            do TextMode.printLn();
+            return;
+          }
+          let previous = previous[1];
+          let current = current[1];
+        }
+      }
+    
+      function void mergeBlocks(Array first, Array second) {
+        if(first = freeListHead) { return; }
+        if(second = freeListTail) { return; }
+    
+        if((first + first[0]) = second) {
+          let first[0] = first[0] + second[0];
+          let first[1] = second[1];
+          do TextMode.print("Merged ");
+          do TextMode.printInt(first);
+          do TextMode.print(" with ");
+          do TextMode.printInt(second);
+          do TextMode.printLn();
         }
         return;
-    }
+      }
 
-    function int getTail(Array block) {
-        return HEADER_SIZE + block[size];
+    function void traverse() {
+        var int curr;
+        curr = kernel ? Kfree : Ufree;  // Handle Kernel and user heap differently
+        while (curr ~= null) {
+            // Iterate until we find the end of the linked list
+            do TextMode.print(" curr -> ");
+            do TextMode.printInt(curr);
+            do TextMode.print(" size -> ");
+            do TextMode.printInt(curr[1]);
+            do TextMode.print(" next -> ");
+            do TextMode.printInt(curr[0]);
+            do TextMode.printLn();
+            curr = curr[0];
+        }
+        return;
     }
 
 }

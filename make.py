@@ -1,7 +1,7 @@
 """MAKE: A simple and provisional build script for ION.
 
 Usage:
-  make.py [-hcas] [-l=<file>...] [-n=<name>]
+  make.py [-hcasr] [-l=<file>...] [-n=<name>]
 
 Options:
   -h                Show this screen.
@@ -9,6 +9,7 @@ Options:
   -c                Compile jack files.
   -a                Assemble.
   -s                Emit symbols.
+  -r                Run the image
   -n=<name>         name of image file [default: ion].
 """
 
@@ -17,8 +18,9 @@ import os
 from os.path import isfile, join, splitext
 
 DEBUG = ""
+TALEA = "bash.exe ../Talea/toolchain.sh 10 0"
 AS = "customasm utils/assembler/master.asm utils/assembler/sys.asm -q"
-TALLUM = "python3 utils/tallum/tallum.py sft --std=tal"
+TALLUM = "python3 utils/tallum/tallum.py sft --std=tal -O"
 COMPILER = "node utils/JackCompiler/JackCompiler.js -x"
 FORMAT = " -f binary"
 BIN    = "bin/"
@@ -103,3 +105,5 @@ if __name__ == "__main__":
     
     name = "ion" if arguments["-n"] == None else arguments["-n"] 
     image(name)
+
+    if arguments["-r"]: os.system(TALEA)

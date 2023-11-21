@@ -4,4 +4,5 @@
 #include "Memory.s"
 #include "Process.s"
 #include "Scheduler.s"
+#include "Test.s"
 #include "TextMode.s"

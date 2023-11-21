@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../Talea"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../JackCompiler"
+		}
+	],
+	"settings": {}
+}

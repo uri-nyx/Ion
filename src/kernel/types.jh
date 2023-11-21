@@ -1,0 +1,3 @@
+const PI = 0xdead;
+struct Point {x, y}
+enum {NO, YES}

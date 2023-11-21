@@ -1,374 +1,212 @@
 #bank text
 Memory:
-; function Memory.kinit 0
-.kinit:
-; push argument 0
+.minit:
+mv s9, zero
 push s9, s2
-lw s9, -0(s4)
-; pop static 1
-ssw s9, STATIC_Memory.s1, s1
-pop s9, s2
-; push argument 1
+li s9, 16515072
+ssw s9, STATIC_Memory.s8, s1
+li s9, 16763904
 push s9, s2
-lw s9, -4(s4)
-; pop static 2
-ssw s9, STATIC_Memory.s2, s1
-pop s9, s2
-; push static 1
-push s9, s2
-llw s9, STATIC_Memory.s1
-; pop static 0
-ssw s9, STATIC_Memory.s0, s1
-pop s9, s2
-; push constant 1
-push s9, s2
-li s9, 1
-; neg
-neg s9, s9
-; pop static 6
-ssw s9, STATIC_Memory.s6, s1
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
+llw s9, STATIC_Memory.s8
 pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant 0
+sub s9, s10, s9
+ssw s9, STATIC_Memory.s9, s1
+llw s9, STATIC_Memory.s8
+ssw s9, STATIC_Memory.s10, s1
+li s9, 16763904
+ssw s9, STATIC_Memory.s11, s1
+llw s9, STATIC_Memory.s8
+addi s9, s9, 8
+sw s9, -0(s3)
+lw s9, -0(s3)
+addi s9, s9, 0
 push s9, s2
-li s9, 0
-; pop temp 0
+llw s9, STATIC_Memory.s9
+subi s9, s9, 16
 mv t0, s9
 pop s9, s2
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
 mv s9, t0
-; pop that 0
 sw s9, 0*4(s6)
+lw s9, -0(s3)
+addi s9, s9, 4
+push s9, s2
+llw s9, STATIC_Memory.s11
+mv t0, s9
 pop s9, s2
-; push static 0
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+llw s9, STATIC_Memory.s10
+addi s9, s9, 0
 push s9, s2
+li s9, 8
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+llw s9, STATIC_Memory.s10
+addi s9, s9, 4
+push s9, s2
+lw s9, -0(s3)
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+llw s9, STATIC_Memory.s11
+addi s9, s9, 0
+push s9, s2
+li s9, 8
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+llw s9, STATIC_Memory.s11
+addi s9, s9, 4
+push s9, s2
+li s9, 0
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+li s9, 0
+restore s2, s7, s8
+ret
+.kinit:
+push s9, s2
+lw s9, -0(s4)
+ssw s9, STATIC_Memory.s1, s1
+lw s9, -4(s4)
+ssw s9, STATIC_Memory.s2, s1
+llw s9, STATIC_Memory.s1
+ssw s9, STATIC_Memory.s0, s1
+li s9, -1
+ssw s9, STATIC_Memory.s6, s1
 llw s9, STATIC_Memory.s0
-; push constant 1
+addi s9, s9, 0
 push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push static 2
+li s9, 0
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+llw s9, STATIC_Memory.s0
+addi s9, s9, 4
 push s9, s2
 llw s9, STATIC_Memory.s2
-; push static 1
 push s9, s2
 llw s9, STATIC_Memory.s1
-; sub
 pop s10, s2
 sub s9, s10, s9
-; push constant 8
-push s9, s2
-li s9, 8
-; sub
-pop s10, s2
-sub s9, s10, s9
-; pop temp 0
+subi s9, s9, 8
 mv t0, s9
 pop s9, s2
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
 mv s9, t0
-; pop that 0
 sw s9, 0*4(s6)
-pop s9, s2
-; push constant 0
-push s9, s2
 li s9, 0
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.kinitUser 0
 .kinitUser:
-; push argument 0
 push s9, s2
 lw s9, -0(s4)
-; pop static 4
 ssw s9, STATIC_Memory.s4, s1
-pop s9, s2
-; push argument 1
-push s9, s2
 lw s9, -4(s4)
-; pop static 5
 ssw s9, STATIC_Memory.s5, s1
-pop s9, s2
-; push constant 0
-push s9, s2
 li s9, 0
-; pop static 6
 ssw s9, STATIC_Memory.s6, s1
-pop s9, s2
-; push constant 0
-push s9, s2
 li s9, 0
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.init 0
 .init:
-; push static 4
 push s9, s2
 llw s9, STATIC_Memory.s4
-; pop static 3
 ssw s9, STATIC_Memory.s3, s1
-pop s9, s2
-; push static 3
-push s9, s2
 llw s9, STATIC_Memory.s3
-; push constant 0
+addi s9, s9, 0
 push s9, s2
 li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant 0
-push s9, s2
-li s9, 0
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
 mv s9, t0
-; pop that 0
 sw s9, 0*4(s6)
-pop s9, s2
-; push static 3
-push s9, s2
 llw s9, STATIC_Memory.s3
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push static 5
+addi s9, s9, 4
 push s9, s2
 llw s9, STATIC_Memory.s5
-; push static 4
 push s9, s2
 llw s9, STATIC_Memory.s4
-; sub
 pop s10, s2
 sub s9, s10, s9
-; push constant 8
-push s9, s2
-li s9, 8
-; sub
-pop s10, s2
-sub s9, s10, s9
-; pop temp 0
+subi s9, s9, 8
 mv t0, s9
 pop s9, s2
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
 mv s9, t0
-; pop that 0
 sw s9, 0*4(s6)
-pop s9, s2
-; push constant 0
-push s9, s2
 li s9, 0
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.peek 0
 .peek:
-; push argument 0
 push s9, s2
 lw s9, -0(s4)
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
 lw s9, 0*4(s6)
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.poke 0
 .poke:
-; push argument 0
 push s9, s2
 lw s9, -0(s4)
-; push argument 1
 push s9, s2
 lw s9, -4(s4)
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
 mv s9, t0
-; pop that 0
 sw s9, 0*4(s6)
-pop s9, s2
-; push constant 0
-push s9, s2
 li s9, 0
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.peekChar 0
 .peekChar:
-; push argument 0
 push s9, s2
 lw s9, -0(s4)
-; pop pointer 2
 mv s7, s9
-pop s9, s2
-; push thatb 0
-push s9, s2
 lbu s9, 0(s7)
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.pokeChar 0
 .pokeChar:
-; push argument 0
 push s9, s2
 lw s9, -0(s4)
-; push argument 1
 push s9, s2
 lw s9, -4(s4)
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; pop pointer 2
 mv s7, s9
-pop s9, s2
-; push temp 0
-push s9, s2
 mv s9, t0
-; pop thatb 0
 sb s9, 0(s7)
-pop s9, s2
-; push constant 0
-push s9, s2
 li s9, 0
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.alloc 4
 .alloc:
 push zero, s2
 push zero, s2
-push zero, s2
 mv s9, zero
-; push argument 0
 push s9, s2
 lw s9, -0(s4)
-; push constant 8
-push s9, s2
-li s9, 8
-; push constant 2
-push s9, s2
-li s9, 2
-; mul
-pop s10, s2
-mul zero, s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop local 3
-sw s9, -12(s3)
-pop s9, s2
-; push static 6
-push s9, s2
-llw s9, STATIC_Memory.s6
-; not
+slti s9, s9, 1
+neg s9, s9
 not s9, s9
-; if-goto .alloc_IF_FALSE_0
 mv s10, s9
 pop s9, s2
 bnez s10, .alloc_IF_FALSE_0
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; goto .allocIF_END_0
-j .allocIF_END_0
-; label .alloc_IF_FALSE_0
-.alloc_IF_FALSE_0:
-; push static 3
-push s9, s2
-llw s9, STATIC_Memory.s3
-; label .allocIF_END_0
-.allocIF_END_0:
-; pop local 1
-sw s9, -4(s3)
-pop s9, s2
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; pop local 0
-sw s9, -0(s3)
-pop s9, s2
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; pop local 2
-sw s9, -8(s3)
-pop s9, s2
-; #cstring " Trying to allocate "
 push s9, s2
 la s9, DATA_Memory.d0
-; call TextMode.print 1
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -376,225 +214,78 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.print
 pop ra, s8
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; push argument 0
+push ra, s8
+save s2, s7, s8
+subi s3, s2, 4
+call TextMode.printLn
+pop ra, s8
+mv t0, s9
+li s9, 0
+restore s2, s7, s8
+ret
+.alloc_IF_FALSE_0:
 push s9, s2
 lw s9, -0(s4)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
+addi s9, s9, 8
 push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring " bytes: "
-push s9, s2
-la s9, DATA_Memory.d1
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; label .alloc_WHILE_EXP_0
-.alloc_WHILE_EXP_0:
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; neq
-pop s10, s2
-sub s9, s10, s9
-snez s9, s9
-neg s9, s9
-; not
-not s9, s9
-; if-goto .allocWHILE_END_0
-mv s10, s9
-pop s9, s2
-bnez s10, .allocWHILE_END_0
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; call Sys.trace 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call Sys.trace
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; call Sys.trace 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call Sys.trace
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; push local 3
-push s9, s2
-lw s9, -12(s3)
-; gt
+llw s9, STATIC_Memory.s9
 pop s10, s2
 slt s9, s9, s10
 neg s9, s9
-; not
 not s9, s9
-; if-goto .alloc_IF_FALSE_1
 mv s10, s9
 pop s9, s2
 bnez s10, .alloc_IF_FALSE_1
-; push local 1
 push s9, s2
-lw s9, -4(s3)
-; push constant 1
+la s9, DATA_Memory.d1
+push ra, s8
+save s2, s7, s8
 push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
+addi s4, s2, 0
+subi s3, s2, 4
+call TextMode.print
+pop ra, s8
+mv t0, s9
 pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; lt
-pop s10, s2
-slt s9, s10, s9
-neg s9, s9
-; goto .allocIF_END_1
-j .allocIF_END_1
-; label .alloc_IF_FALSE_1
+push ra, s8
+save s2, s7, s8
+subi s3, s2, 4
+call TextMode.printLn
+pop ra, s8
+mv t0, s9
+li s9, 0
+restore s2, s7, s8
+ret
 .alloc_IF_FALSE_1:
-; push constant 0
+push s9, s2
+llw s9, STATIC_Memory.s10
+addi s9, s9, 4
+mv s6, s9
+lw s9, 0*4(s6)
+sw s9, -0(s3)
+pop s9, s2
+.alloc_WHILE_EXP_0:
 push s9, s2
 li s9, 0
-; label .allocIF_END_1
-.allocIF_END_1:
-; not
+mv s10, s9
+pop s9, s2
+bnez s10, .allocWHILE_END_0
+push s9, s2
+lw s9, -0(s3)
+push s9, s2
+llw s9, STATIC_Memory.s11
+pop s10, s2
+sub s9, s10, s9
+seqz s9, s9
+neg s9, s9
 not s9, s9
-; if-goto .alloc_IF_FALSE_2
 mv s10, s9
 pop s9, s2
 bnez s10, .alloc_IF_FALSE_2
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; pop local 0
-sw s9, -0(s3)
-pop s9, s2
-; #cstring " found best "
 push s9, s2
 la s9, DATA_Memory.d2
-; call TextMode.print 1
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -602,404 +293,79 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.print
 pop ra, s8
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring " size "
-push s9, s2
-la s9, DATA_Memory.d3
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; call TextMode.printLn 0
 push ra, s8
 save s2, s7, s8
 subi s3, s2, 4
 call TextMode.printLn
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; goto .allocIF_END_2
-j .allocIF_END_2
-; label .alloc_IF_FALSE_2
+li s9, 0
+restore s2, s7, s8
+ret
 .alloc_IF_FALSE_2:
-; push local 1
 push s9, s2
-lw s9, -4(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
+lw s9, -0(s3)
+addi s9, s9, 0
 mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
 lw s9, 0*4(s6)
-; push local 3
 push s9, s2
-lw s9, -12(s3)
-; ge
+lw s9, -0(s4)
+addi s9, s9, 8
 pop s10, s2
-slt s9, s10, s9
-addi s9, s9, -1
-; not
+slt s9, s9, s10
+neg s9, s9
 not s9, s9
-; if-goto .alloc_IF_FALSE_3
 mv s10, s9
 pop s9, s2
 bnez s10, .alloc_IF_FALSE_3
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; pop local 0
-sw s9, -0(s3)
-pop s9, s2
-; #cstring " found at "
-push s9, s2
-la s9, DATA_Memory.d4
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 0
 push s9, s2
 lw s9, -0(s3)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
+addi s9, s9, 0
+mv s6, s9
+lw s9, 0*4(s6)
 push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring " size "
-push s9, s2
-la s9, DATA_Memory.d5
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 0
+lw s9, -0(s4)
+addi s9, s9, 4
+pop s10, s2
+sub s9, s10, s9
 push s9, s2
 lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
 pop s10, s2
 add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
+sw s9, -8(s3)
+lw s9, -8(s3)
+addi s9, s9, 0
 push s9, s2
-lw s9, 0*4(s6)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
+lw s9, -0(s4)
+addi s9, s9, 4
 mv t0, s9
 pop s9, s2
-; call TextMode.printLn 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call TextMode.printLn
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; label .alloc_IF_FALSE_3
-.alloc_IF_FALSE_3:
-; label .allocIF_END_2
-.allocIF_END_2:
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; pop local 1
+mv s9, t0
+sw s9, 0*4(s6)
+lw s9, -8(s3)
+addi s9, s9, 4
 sw s9, -4(s3)
-pop s9, s2
-; goto .alloc_WHILE_EXP_0
-j .alloc_WHILE_EXP_0
-; label .allocWHILE_END_0
-.allocWHILE_END_0:
-; push static 6
-push s9, s2
-llw s9, STATIC_Memory.s6
-; not
-not s9, s9
-; if-goto .alloc_IF_FALSE_4
-mv s10, s9
-pop s9, s2
-bnez s10, .alloc_IF_FALSE_4
-; push local 0
+lw s9, -0(s3)
+addi s9, s9, 0
 push s9, s2
 lw s9, -0(s3)
-; push argument 0
+addi s9, s9, 0
+mv s6, s9
+lw s9, 0*4(s6)
 push s9, s2
 lw s9, -0(s4)
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; pop static 0
-ssw s9, STATIC_Memory.s0, s1
-pop s9, s2
-; #cstring "Updated Kfree: "
-push s9, s2
-la s9, DATA_Memory.d6
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; push argument 0
-push s9, s2
-lw s9, -0(s4)
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; sub
+addi s9, s9, 4
 pop s10, s2
 sub s9, s10, s9
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; pop pointer 1
 mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
 mv s9, t0
-; pop that 0
 sw s9, 0*4(s6)
-pop s9, s2
-; #cstring "; remaining "
-push s9, s2
-la s9, DATA_Memory.d7
-; call TextMode.print 1
+la s9, DATA_Memory.d3
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -1007,31 +373,8 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.print
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; call TextMode.printInt 1
+lw s9, -4(s3)
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -1039,712 +382,102 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.printInt
 pop ra, s8
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; #cstring "; next "
-push s9, s2
-la s9, DATA_Memory.d8
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; call TextMode.printLn 0
 push ra, s8
 save s2, s7, s8
 subi s3, s2, 4
 call TextMode.printLn
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; goto .allocIF_END_4
-j .allocIF_END_4
-; label .alloc_IF_FALSE_4
-.alloc_IF_FALSE_4:
-; push argument 0
-push s9, s2
-lw s9, -0(s4)
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; pop static 3
-ssw s9, STATIC_Memory.s3, s1
-pop s9, s2
-; push static 3
-push s9, s2
-llw s9, STATIC_Memory.s3
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push static 3
-push s9, s2
-llw s9, STATIC_Memory.s3
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; push argument 0
-push s9, s2
-lw s9, -0(s4)
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; sub
-pop s10, s2
-sub s9, s10, s9
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; label .allocIF_END_4
-.allocIF_END_4:
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant -2
-push s9, s2
-li s9, -2
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push argument 0
-push s9, s2
-lw s9, -0(s4)
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; return
+lw s9, -4(s3)
 restore s2, s7, s8
 ret
-; 
-; function Memory.deAlloc 3
+.alloc_IF_FALSE_3:
+push s9, s2
+lw s9, -0(s3)
+addi s9, s9, 4
+mv s6, s9
+lw s9, 0*4(s6)
+sw s9, -0(s3)
+pop s9, s2
+j .alloc_WHILE_EXP_0
+.allocWHILE_END_0:
 .deAlloc:
 push zero, s2
 push zero, s2
 mv s9, zero
-; push argument 0
 push s9, s2
 lw s9, -0(s4)
-; push constant 8
-push s9, s2
-li s9, 8
-; sub
-pop s10, s2
-sub s9, s10, s9
-; pop local 0
+subi s9, s9, 4
 sw s9, -0(s3)
-pop s9, s2
-; #cstring "Deallocating segment at "
-push s9, s2
-la s9, DATA_Memory.d9
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
+llw s9, STATIC_Memory.s10
+sw s9, -4(s3)
+lw s9, -4(s3)
+addi s9, s9, 4
 mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
 lw s9, 0*4(s6)
-; push constant -2
-push s9, s2
-li s9, -2
-; eq
-pop s10, s2
-sub s9, s10, s9
-seqz s9, s9
-neg s9, s9
-; not
-not s9, s9
-; if-goto .deAlloc_IF_FALSE_0
-mv s10, s9
-pop s9, s2
-bnez s10, .deAlloc_IF_FALSE_0
-; push static 6
-push s9, s2
-llw s9, STATIC_Memory.s6
-; not
-not s9, s9
-; if-goto .deAlloc_IF_FALSE_1
-mv s10, s9
-pop s9, s2
-bnez s10, .deAlloc_IF_FALSE_1
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; goto .deAllocIF_END_1
-j .deAllocIF_END_1
-; label .deAlloc_IF_FALSE_1
-.deAlloc_IF_FALSE_1:
-; push static 3
-push s9, s2
-llw s9, STATIC_Memory.s3
-; label .deAllocIF_END_1
-.deAllocIF_END_1:
-; pop local 2
 sw s9, -8(s3)
 pop s9, s2
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; pop local 1
-sw s9, -4(s3)
-pop s9, s2
-; label .deAlloc_WHILE_EXP_0
 .deAlloc_WHILE_EXP_0:
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; push constant 0
 push s9, s2
 li s9, 0
-; neq
-pop s10, s2
-sub s9, s10, s9
-snez s9, s9
-neg s9, s9
-; not
-not s9, s9
-; if-goto .deAlloc_IF_FALSE_2
-mv s10, s9
-pop s9, s2
-bnez s10, .deAlloc_IF_FALSE_2
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; lt
-pop s10, s2
-slt s9, s10, s9
-neg s9, s9
-; goto .deAllocIF_END_2
-j .deAllocIF_END_2
-; label .deAlloc_IF_FALSE_2
-.deAlloc_IF_FALSE_2:
-; push constant 0
-push s9, s2
-li s9, 0
-; label .deAllocIF_END_2
-.deAllocIF_END_2:
-; not
-not s9, s9
-; if-goto .deAllocWHILE_END_0
 mv s10, s9
 pop s9, s2
 bnez s10, .deAllocWHILE_END_0
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; pop local 2
-sw s9, -8(s3)
-pop s9, s2
-; push local 2
 push s9, s2
 lw s9, -8(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; pop local 1
-sw s9, -4(s3)
-pop s9, s2
-; goto .deAlloc_WHILE_EXP_0
-j .deAlloc_WHILE_EXP_0
-; label .deAllocWHILE_END_0
-.deAllocWHILE_END_0:
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
 push s9, s2
 lw s9, -0(s3)
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
 pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; eq
-pop s10, s2
-sub s9, s10, s9
-seqz s9, s9
+slt s9, s9, s10
 neg s9, s9
-; not
 not s9, s9
-; if-goto .deAlloc_IF_FALSE_3
 mv s10, s9
 pop s9, s2
-bnez s10, .deAlloc_IF_FALSE_3
-; push local 0
+bnez s10, .deAlloc_IF_FALSE_0
 push s9, s2
 lw s9, -0(s3)
-; push constant 1
+addi s9, s9, 4
 push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
+lw s9, -8(s3)
+mv t0, s9
 pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; push local 1
-push s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
 lw s9, -4(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push local 0
+addi s9, s9, 4
 push s9, s2
 lw s9, -0(s3)
-; push constant 0
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+lw s9, -0(s3)
 push s9, s2
-li s9, 0
-; push constant 2
+lw s9, -8(s3)
+push ra, s8
+save s2, s7, s8
 push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 1
-push s9, s2
+addi s4, s2, 4
+subi s3, s2, 4
+call Memory.mergeBlocks
+pop ra, s8
+mv t0, s9
 lw s9, -4(s3)
-; push constant 0
 push s9, s2
-li s9, 0
-; push constant 2
+lw s9, -0(s3)
+push ra, s8
+save s2, s7, s8
 push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; pop temp 0
+addi s4, s2, 4
+subi s3, s2, 4
+call Memory.mergeBlocks
+pop ra, s8
 mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; #cstring " merge "
-push s9, s2
-la s9, DATA_Memory.d10
-; call TextMode.print 1
+la s9, DATA_Memory.d4
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -1752,13 +485,8 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.print
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; call TextMode.printInt 1
+lw s9, -0(s4)
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -1766,490 +494,196 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.printInt
 pop ra, s8
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; #cstring " with next "
-push s9, s2
-la s9, DATA_Memory.d11
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 1
-push s9, s2
-lw s9, -4(s3)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; label .deAlloc_IF_FALSE_3
-.deAlloc_IF_FALSE_3:
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; eq
-pop s10, s2
-sub s9, s10, s9
-seqz s9, s9
-neg s9, s9
-; not
-not s9, s9
-; if-goto .deAlloc_IF_FALSE_4
-mv s10, s9
-pop s9, s2
-bnez s10, .deAlloc_IF_FALSE_4
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; add
-pop s10, s2
-add s9, s10, s9
-; push constant 8
-push s9, s2
-li s9, 8
-; add
-pop s10, s2
-add s9, s10, s9
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push temp 0
-push s9, s2
-mv s9, t0
-; pop that 0
-sw s9, 0*4(s6)
-pop s9, s2
-; #cstring " combine "
-push s9, s2
-la s9, DATA_Memory.d12
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 2
-push s9, s2
-lw s9, -8(s3)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring " with "
-push s9, s2
-la s9, DATA_Memory.d13
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
-lw s9, -0(s3)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; call TextMode.printLn 0
 push ra, s8
 save s2, s7, s8
 subi s3, s2, 4
 call TextMode.printLn
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; label .deAlloc_IF_FALSE_4
-.deAlloc_IF_FALSE_4:
-; label .deAlloc_IF_FALSE_0
-.deAlloc_IF_FALSE_0:
-; call TextMode.printLn 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call TextMode.printLn
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring " Deallocation successful "
-push s9, s2
-la s9, DATA_Memory.d14
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring " ("
-push s9, s2
-la s9, DATA_Memory.d15
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring ":"
-push s9, s2
-la s9, DATA_Memory.d16
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push static 0
-push s9, s2
-llw s9, STATIC_Memory.s0
-; push constant 0
-push s9, s2
 li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
-mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
-lw s9, 0*4(s6)
-; call TextMode.printInt 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.printInt
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; #cstring ":)"
-push s9, s2
-la s9, DATA_Memory.d17
-; call TextMode.print 1
-push ra, s8
-save s2, s7, s8
-push s9, s2
-addi s4, s2, 0
-subi s3, s2, 4
-call TextMode.print
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; call TextMode.printLn 0
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call TextMode.printLn
-pop ra, s8
-; pop temp 0
-mv t0, s9
-pop s9, s2
-; push constant 0
-push s9, s2
-li s9, 0
-; return
 restore s2, s7, s8
 ret
-; 
-; function Memory.traverse 1
+.deAlloc_IF_FALSE_0:
+push s9, s2
+lw s9, -4(s3)
+addi s9, s9, 4
+mv s6, s9
+lw s9, 0*4(s6)
+sw s9, -4(s3)
+lw s9, -8(s3)
+addi s9, s9, 4
+mv s6, s9
+lw s9, 0*4(s6)
+sw s9, -8(s3)
+pop s9, s2
+j .deAlloc_WHILE_EXP_0
+.deAllocWHILE_END_0:
+.mergeBlocks:
+push s9, s2
+lw s9, -0(s4)
+push s9, s2
+llw s9, STATIC_Memory.s10
+pop s10, s2
+sub s9, s10, s9
+seqz s9, s9
+neg s9, s9
+not s9, s9
+mv s10, s9
+pop s9, s2
+bnez s10, .mergeBlocks_IF_FALSE_0
+push s9, s2
+li s9, 0
+restore s2, s7, s8
+ret
+.mergeBlocks_IF_FALSE_0:
+push s9, s2
+lw s9, -4(s4)
+push s9, s2
+llw s9, STATIC_Memory.s11
+pop s10, s2
+sub s9, s10, s9
+seqz s9, s9
+neg s9, s9
+not s9, s9
+mv s10, s9
+pop s9, s2
+bnez s10, .mergeBlocks_IF_FALSE_1
+push s9, s2
+li s9, 0
+restore s2, s7, s8
+ret
+.mergeBlocks_IF_FALSE_1:
+push s9, s2
+lw s9, -0(s4)
+push s9, s2
+lw s9, -0(s4)
+addi s9, s9, 0
+mv s6, s9
+lw s9, 0*4(s6)
+pop s10, s2
+add s9, s10, s9
+push s9, s2
+lw s9, -4(s4)
+pop s10, s2
+sub s9, s10, s9
+seqz s9, s9
+neg s9, s9
+not s9, s9
+mv s10, s9
+pop s9, s2
+bnez s10, .mergeBlocks_IF_FALSE_2
+push s9, s2
+lw s9, -0(s4)
+addi s9, s9, 0
+push s9, s2
+lw s9, -0(s4)
+addi s9, s9, 0
+mv s6, s9
+lw s9, 0*4(s6)
+push s9, s2
+lw s9, -4(s4)
+addi s9, s9, 0
+mv s6, s9
+lw s9, 0*4(s6)
+pop s10, s2
+add s9, s10, s9
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+lw s9, -0(s4)
+addi s9, s9, 4
+push s9, s2
+lw s9, -4(s4)
+addi s9, s9, 4
+mv s6, s9
+lw s9, 0*4(s6)
+mv t0, s9
+pop s9, s2
+mv s6, s9
+mv s9, t0
+sw s9, 0*4(s6)
+la s9, DATA_Memory.d5
+push ra, s8
+save s2, s7, s8
+push s9, s2
+addi s4, s2, 0
+subi s3, s2, 4
+call TextMode.print
+pop ra, s8
+mv t0, s9
+lw s9, -0(s4)
+push ra, s8
+save s2, s7, s8
+push s9, s2
+addi s4, s2, 0
+subi s3, s2, 4
+call TextMode.printInt
+pop ra, s8
+mv t0, s9
+la s9, DATA_Memory.d6
+push ra, s8
+save s2, s7, s8
+push s9, s2
+addi s4, s2, 0
+subi s3, s2, 4
+call TextMode.print
+pop ra, s8
+mv t0, s9
+lw s9, -4(s4)
+push ra, s8
+save s2, s7, s8
+push s9, s2
+addi s4, s2, 0
+subi s3, s2, 4
+call TextMode.printInt
+pop ra, s8
+mv t0, s9
+pop s9, s2
+push ra, s8
+save s2, s7, s8
+subi s3, s2, 4
+call TextMode.printLn
+pop ra, s8
+mv t0, s9
+pop s9, s2
+.mergeBlocks_IF_FALSE_2:
+push s9, s2
+li s9, 0
+restore s2, s7, s8
+ret
 .traverse:
 mv s9, zero
-; push static 6
 push s9, s2
 llw s9, STATIC_Memory.s6
-; not
 not s9, s9
-; if-goto .traverse_IF_FALSE_0
 mv s10, s9
 pop s9, s2
 bnez s10, .traverse_IF_FALSE_0
-; push static 0
 push s9, s2
 llw s9, STATIC_Memory.s0
-; goto .traverseIF_END_0
 j .traverseIF_END_0
-; label .traverse_IF_FALSE_0
 .traverse_IF_FALSE_0:
-; push static 3
 push s9, s2
 llw s9, STATIC_Memory.s3
-; label .traverseIF_END_0
 .traverseIF_END_0:
-; pop local 0
 sw s9, -0(s3)
 pop s9, s2
-; label .traverse_WHILE_EXP_0
 .traverse_WHILE_EXP_0:
-; push local 0
 push s9, s2
 lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; neq
-pop s10, s2
-sub s9, s10, s9
-snez s9, s9
-neg s9, s9
-; not
+subi s9, s9, 0
+seqz s9, s9
+addi s9, s9, -1
 not s9, s9
-; if-goto .traverseWHILE_END_0
 mv s10, s9
 pop s9, s2
 bnez s10, .traverseWHILE_END_0
-; #cstring " curr -> "
 push s9, s2
-la s9, DATA_Memory.d18
-; call TextMode.print 1
+la s9, DATA_Memory.d7
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -2257,13 +691,8 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.print
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
 lw s9, -0(s3)
-; call TextMode.printInt 1
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -2271,13 +700,8 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.printInt
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; #cstring " size -> "
-push s9, s2
-la s9, DATA_Memory.d19
-; call TextMode.print 1
+la s9, DATA_Memory.d8
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -2285,31 +709,11 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.print
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
 lw s9, -0(s3)
-; push constant 1
-push s9, s2
-li s9, 1
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
+addi s9, s9, 4
 mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
 lw s9, 0*4(s6)
-; call TextMode.printInt 1
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -2317,13 +721,8 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.printInt
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; #cstring " next -> "
-push s9, s2
-la s9, DATA_Memory.d20
-; call TextMode.print 1
+la s9, DATA_Memory.d9
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -2331,31 +730,11 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.print
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
 lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
+addi s9, s9, 0
 mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
 lw s9, 0*4(s6)
-; call TextMode.printInt 1
 push ra, s8
 save s2, s7, s8
 push s9, s2
@@ -2363,162 +742,85 @@ addi s4, s2, 0
 subi s3, s2, 4
 call TextMode.printInt
 pop ra, s8
-; pop temp 0
 mv t0, s9
 pop s9, s2
-; call TextMode.printLn 0
 push ra, s8
 save s2, s7, s8
 subi s3, s2, 4
 call TextMode.printLn
 pop ra, s8
-; pop temp 0
 mv t0, s9
-pop s9, s2
-; push local 0
-push s9, s2
 lw s9, -0(s3)
-; push constant 0
-push s9, s2
-li s9, 0
-; push constant 2
-push s9, s2
-li s9, 2
-; shll
-pop s10, s2
-shll s9, s10, s9
-; add
-pop s10, s2
-add s9, s10, s9
-; pop pointer 1
+addi s9, s9, 0
 mv s6, s9
-pop s9, s2
-; push that 0
-push s9, s2
 lw s9, 0*4(s6)
-; pop local 0
 sw s9, -0(s3)
 pop s9, s2
-; goto .traverse_WHILE_EXP_0
 j .traverse_WHILE_EXP_0
-; label .traverseWHILE_END_0
 .traverseWHILE_END_0:
-; push constant 0
 push s9, s2
 li s9, 0
-; return
 restore s2, s7, s8
 ret
-; 
+;! syntax error: invalid instrutction in line 612
 #bank data
 DATA_Memory:
 .d0:
-	#d32 20
-	#d " Trying to allocate "
+	#d32 31
+	#d "Size must be a positive integer"
 	#align 32
 
 .d1:
-	#d32 8
-	#d " bytes: "
+	#d32 35
+	#d "Cannot alloc more than 248000 bytes"
 	#align 32
 
 .d2:
-	#d32 12
-	#d " found best "
+	#d32 22
+	#d "No allocation possible"
 	#align 32
 
 .d3:
-	#d32 6
-	#d " size "
+	#d32 19
+	#d "Allocated block at "
 	#align 32
 
 .d4:
-	#d32 10
-	#d " found at "
+	#d32 21
+	#d "Deallocated block at "
 	#align 32
 
 .d5:
-	#d32 6
-	#d " size "
+	#d32 7
+	#d "Merged "
 	#align 32
 
 .d6:
-	#d32 15
-	#d "Updated Kfree: "
-	#align 32
-
-.d7:
-	#d32 12
-	#d "; remaining "
-	#align 32
-
-.d8:
-	#d32 7
-	#d "; next "
-	#align 32
-
-.d9:
-	#d32 24
-	#d "Deallocating segment at "
-	#align 32
-
-.d10:
-	#d32 7
-	#d " merge "
-	#align 32
-
-.d11:
-	#d32 11
-	#d " with next "
-	#align 32
-
-.d12:
-	#d32 9
-	#d " combine "
-	#align 32
-
-.d13:
 	#d32 6
 	#d " with "
 	#align 32
 
-.d14:
-	#d32 25
-	#d " Deallocation successful "
-	#align 32
-
-.d15:
-	#d32 2
-	#d " ("
-	#align 32
-
-.d16:
-	#d32 1
-	#d ":"
-	#align 32
-
-.d17:
-	#d32 2
-	#d ":)"
-	#align 32
-
-.d18:
+.d7:
 	#d32 9
 	#d " curr -> "
 	#align 32
 
-.d19:
+.d8:
 	#d32 9
 	#d " size -> "
 	#align 32
 
-.d20:
+.d9:
 	#d32 9
 	#d " next -> "
 	#align 32
 
 #bank bss
 STATIC_Memory:
+.s8: #d32 0
+.s9: #d32 0
+.s10: #d32 0
+.s11: #d32 0
 .s1: #d32 0
 .s2: #d32 0
 .s0: #d32 0

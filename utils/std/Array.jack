@@ -19,7 +19,6 @@
 
     /** Disposes this array. */
     method void dispose() {
-        if (this = null) return; // prevent Null Pointer dereference
-        return Memory.deAlloc(this);
+        do Memory.deAlloc(this);
     }
 }

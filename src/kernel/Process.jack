@@ -7,7 +7,7 @@ class Process {
     field Context context;
     field bool state;
     field int base_address;
-    static Array processTable;
+    static int processTable;
     static int processCount, currPID;
 
     function void init() {

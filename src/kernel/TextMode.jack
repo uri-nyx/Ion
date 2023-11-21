@@ -2,7 +2,7 @@
 
 class TextMode {
     const  VIDEO_MEM = 0xe51000, COLS = 80, ROWS = 60;
-    static Array charBuffer;
+    static int charBuffer;
     static int cursorX, cursorY;
     static char attribute;
     function void init () {

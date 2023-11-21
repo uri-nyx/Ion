@@ -5,45 +5,63 @@ class Kernel {
     const VIDEO = 0xe53000;
 
     function int main () {
+        var int exported;
         do TextMode.setCursor(0, 4);
         do TextMode.init();
-        do Kernel.testMem();
+        do Test.main();
+        //do Kernel.testMem();
+        let exported = ::1;
+        do $!exported();
         return 10;
     }
 
     function void testMem () {
         // This function is not safe because it does not check for allocation failure
-        var int temp, err;
-        var Array a, b, c;
-        do Memory.kinit(HEAP, HEAP_END);
-        a = Array.new(400*4);
-        if (a = null) { 
-            do TextMode.print("Allocation of array A failed");
-            do TextMode.printLn();
-        }
-        b = Array.new(200*4);
-        if (b = null) { 
-            do TextMode.print("Allocation of array B failed");
-            do TextMode.printLn();
-        }
-        for (var int i; i = 0; i < 400; i+=1) a[i] = i;
-        for (var int i; i = 199; i > 0; i-=1) b[i] = a[i];
-        do TextMode.print("> ");
-        /*for (var int i; i = 0; i < 10; i+=1) {
-            //do TextMode.printInt(b[i]);
-            //do TextMode.print(" ");
-        }
-        */
-        //do TextMode.print("END.");
-        //do TextMode.printLn();
-        do a.dispose();
-        let c = Array.new(250*4);
-        if (c = null) { 
-            do TextMode.print("Allocation of array C failed");
-            do TextMode.printLn();
-        }
-        do b.dispose();
-        do c.dispose(); //Null pointer dereference
+        var int b, block, block1, block2, block3, block4, block5;
+        do Memory.minit();
+        b = 0;
+        let block = Memory.alloc(242000);
+        //b += 1;
+        do Sys.trace(b);
+        do Memory.deAlloc(block);
+        //b += 1;
+        do Sys.trace(b);
+        let block1 = Memory.alloc(30000);
+        //b += 1;
+        do Sys.trace(b);
+        let block2 = Memory.alloc(20000);
+        //b += 1;
+        do Sys.trace(b);
+        let block3 = Memory.alloc(20000);
+        //b += 1;
+        do Sys.trace(b);
+        let block4 = Memory.alloc(50000);
+        //b += 1;
+        do Sys.trace(b);
+        let block5 = Memory.alloc(20000);
+        //b += 1;
+        do Sys.trace(b);
+        do Memory.deAlloc(block3);
+        //b += 1;
+        do Sys.trace(b);      // random order
+        do Memory.deAlloc(block5);
+        //b += 1;
+        do Sys.trace(b);
+        do Memory.deAlloc(block2);
+        //b += 1;
+        do Sys.trace(b);
+        do Memory.deAlloc(block1);
+        //b += 1;
+        do Sys.trace(b);
+        do Memory.deAlloc(block4);
+        //b += 1;
+        do Sys.trace(b);
+        let block = Memory.alloc(242000);
+        //b += 1;
+        do Sys.trace(b);
+        do Memory.deAlloc(block);
+        //b += 1;
+        do Sys.trace(b);
         return;
     }
 
