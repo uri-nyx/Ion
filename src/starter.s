@@ -66,47 +66,16 @@ swd t1, memory.LIBS(zero)   ; save libs in globals
 
 call INITIALIZE_IVT    ; sets the isrs in a table in data mem
 
-; Now we can set up a Jack context and jump to the kernel class
-; We set the Jack Stack (s2) and callstack (s8) 3 Kb over the ssp
-; and allocate 4 Kb for each one, thus, one page for stack.
+SP = 0xff_eb_ff
 
-JACKSP = 0xff_eb_ff
-JACKCALLSTACK = 0xff_db_ff
-JACKGP = LIBS
-
-li s2, JACKSP
-li s8, JACKCALLSTACK
-li gp, JACKGP
-swd s2, jack.SP(zero)      ; Save the initial values in sys globals
-swd s8, jack.CALLSTACK(zero)
-li t0, 1212
-sw t0, 0(gp)
-; The current Jack compiler I hacked supports an option to compile the
-; static variables into data memory, but for now, we're gonna to stick
-; with compiling them in the bss.
-; Once we have set up the jack context we can enable interrupts and 
-; jump to the Kernel, allways following the Jack call convention.
-
+li sp, SP
 int.set t5, t6
 li t0, 2
 priority t0, t5, t6
 call Cmain
-j $
-push ra, s8
-save s2, s7, s8
-subi s3, s2, 4
-call Kernel.main
-pop ra, s8
 
 trace s9, zero, zero, t0
 j $
 
-Sys:
-.trace:
-trace s9, s8, s2, sp
-restore s2, s7, s8
-ret
-
-#include "includes/test.s"
-#include "kernel/out/link.asm"   ; Link the kernel in jack (super crude)
+#include "kernel/out/link.s"   ; Link the kernel in c (super crude)
 #include "includes/interrupt.s"

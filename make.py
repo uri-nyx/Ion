@@ -34,7 +34,7 @@ STD    = "utils/std/"
 
 def link(lib: str):
     print("Linking lib ", lib)
-    path = f"{STD}{lib}.jack"
+    path = f"{STD}{lib}."
     errorcode = os.system(f"{COMPILER} {path}")
     if (errorcode != 0): exit(1)
     errorcode = os.system(f"mv {STD+lib}.vm {VM}")
