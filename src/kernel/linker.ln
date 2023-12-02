@@ -1,0 +1,19 @@
+__SECTION_TEXT = KERNEL_ADDR
+__SECTION_DATA = __SECTION_TEXT + __data_start
+__SECTION_BSS  = __SECTION_DATA + __bss_start
+#bankdef text {
+    #addr __SECTION_TEXT
+    #size __text_size
+    #outp 0
+}
+
+#bankdef data {
+    #addr __SECTION_DATA
+    #size __data_size
+    #outp __data_start * 8
+}
+
+#bankdef bss {
+ #addr __SECTION_BSS
+ #size __bss_size
+}

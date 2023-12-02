@@ -1,9 +1,10 @@
 **/*.vm
+/emu/TaleaZ
 /.vscode
-/utils/assembler
-/utils/JackCompiler
-/utils/tallum
+/utils/*
+/utils/scc
 /venv
+/build/*
 ### macOS ###
 # General
 .DS_Store
