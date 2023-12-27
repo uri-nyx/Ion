@@ -3,6 +3,7 @@ _start:
     li sp, kernel_stack
     call get_timer_dev
     call get_kb_dev
+    call get_drive_dev
     call INITIALIZE_IVT
     call _clear
     la  a0, __kernel_end
@@ -71,6 +72,19 @@ Craise:
     call Cbios_puts
     ret
 
+C__call:
+    push    fp, sp
+    mv      fp, sp
+    lw      a0, 8(fp)
+    li      t0, 0x014
+    trace   t0, a0, zero, zero
+    push    ra, sp
+    jalr    ra, 0(a0)
+    pop     ra, sp
+    trace   t0, a0, zero, zero 
+    pop     fp, sp
+    ret
+
 #bank data
 flush: #d "\n\r\0"
 raise_error: #d "raise() not implemented!\n\r\0"
@@ -81,5 +95,5 @@ CKernelEnd: #d32 0
 #bank bss
 #res KERNEL_STACK_SIZE
 kernel_stack:
-#align 4096 * 8
+#align 4096 * 8 * 2
 __kernel_end:

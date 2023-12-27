@@ -13,8 +13,8 @@
 }
 
 ; Very simple bootloader for ION: loads ION at address 0x1200
-#include "../drivers/tps.s"
-#include "../drivers/video.s"
+#include "tps.s"
+#include "video.s"
 #bankdef boot {
     #addr 0x1000
     #size 512
