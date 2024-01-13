@@ -90,14 +90,14 @@ extern void trace(int n);
  * @param log page to map
  * @param wx flags (write and execute permissions)
  */
-extern void mmu_map(int phy, int log, int wx);
+extern void mmu_map(int phy, int log, int wx, int pt);
 
 /**
  * @brief Unmap a page
  * 
  * @param log the page to unmap
  */
-extern void mmu_unmap(int log);
+extern void mmu_unmap(int log, int pt);
 
 /**
  * @brief Update a mapping
@@ -106,7 +106,7 @@ extern void mmu_unmap(int log);
  * @param d dirty bit
  * @param p present bit
  */
-extern void mmu_update(int log, int d, int p);
+extern void mmu_update(int log, int d, int p, int pt);
 
 /**
  * @brief get the status of a page
@@ -114,7 +114,7 @@ extern void mmu_update(int log, int d, int p);
  * @param log the page
  * @return int32_t the status of the page 
  */
-extern int32_t  mmu_stat(int log);
+extern int32_t  mmu_stat(int log, int pt);
 
 /**
  * @brief set a page table
@@ -123,6 +123,25 @@ extern int32_t  mmu_stat(int log);
  * @param len the lenght of the page table
  */
 extern void mmu_setpt(void* pt, int len);
+
+/**
+ * @brief sets the priority level
+ * 
+ * @param prio the priority level
+ */
+extern void set_priority(int prio);
+
+/**
+ * @brief Enables interrupts
+ * 
+ */
+extern void _interrupt_enable(void);
+
+/**
+ * @brief disables all interrupts
+ * 
+ */
+extern void _interrupt_disable(void);
 
 extern void __call(int addr);
 

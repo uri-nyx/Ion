@@ -9,9 +9,16 @@
 
 #define ION_MAX_DEVICES 26
 
-#define ION_FS_FILE    0
-#define ION_FS_DIR     1
-#define ION_FS_INVALID 2
+#define ION_FS_FILE    1
+#define ION_FS_DIR     2
+#define ION_FS_INVALID 0
+#define ION_FS_RDONLY  0x80000
+#define ION_FS_WRONLY  0x40000
+#define ION_FS_SYSTEM  0x20000
+
+#define ION_FS_O_RDONLY 0
+#define ION_FS_O_WRONLY 1
+#define ION_FS_O_RDWR   2
 
 extern int fs_currid;
 
@@ -34,6 +41,11 @@ typedef struct {
 typedef struct {
         char name[8];
         int (*mount)(/* ion_fs *self, struct disk *device */);
+        int (*creat)(/* ion_fs *self, char *path, int flags*/);
+        int (*delet)(/* ion_fs *self, char *path */);
+        int (*mkdir)(/* ion_fs *self, char *path */);
+        int (*rmdir)(/* ion_fs *self, char *path */);
+        int (*rename)(/* ion_fs *self, char *path, char *old */);
         int (*read)(/* ion_file *file, void *buff, int size */);
         int (*write)(/* ion_file *file, void *buff, int size */);
         int (*close)(/* ion_file *file */);
@@ -45,14 +57,35 @@ typedef struct {
 
 extern ion_fs *filesystems[ION_MAX_DEVICES];
 
+int fs_create_file(char *path, int flags);
+
+int fs_delete_file(char *path);
+
+int fs_create_dir(char *path);
+
+int fs_delete_dir(char *path);
+
+/**
+ * @brief Renames a file, moving it if necessary. Only moves between the same
+ * drive. If a drive letter is speceified in a path and not in another, it is
+ * assumed both paths refer to the same drive. If either path specifies a
+ * different letter than the other one, ION_ENMVDV is returned
+ *
+ * @param old the path to replace
+ * @param new the replacement
+ * @return int 0 on success, otherwise an error code
+ */
+int fs_rename(char *old, char *new);
+
 /**
  * @brief Opens a file
  *
  * @param[out] file the opened file
  * @param fname the file name (absolute path)
+ * @param option in which mode to open the file
  * @return int 0 on success, otherwhise an error code
  */
-int fs_open_file(ion_file *file, char *fname);
+int fs_open_file(ion_file *file, char *fname, int option);
 
 /**
  * @brief Reads data from an open file
@@ -65,12 +98,33 @@ int fs_open_file(ion_file *file, char *fname);
 int fs_read_file(ion_file *file, void *buff, int size);
 
 /**
+ * @brief Writes data to an open file
+ *
+ * @param file the file to write to
+ * @param[out] buff the buffer to write
+ * @param size the number of bytes to write
+ * @return int 0 on sucess, otherwise an error code
+ */
+int fs_write_file(ion_file *file, void *buff, int size);
+
+/**
  * @brief Close an pen file
  *
  * @param file the file to close
  * @return int 0 on sucess otherwise an error code
  */
 int fs_close_file(ion_file *file);
+
+/**
+ * @brief repositions the file offset of an open file to the argument offset
+       according to the directive whence
+ *
+ * @param file
+ * @param offset
+ * @param whence
+ * @return int
+ */
+int fs_lseek(ion_file *file, int offset, int whence);
 
 /**
  * @brief Register a filesystem driver with the VFS
@@ -115,5 +169,13 @@ char *fs_next_subpath(char *buff, char *next);
  * @return char* filename
  */
 char *fs_path_and_fname(char *buff, char *path);
+
+/**
+ * @brief Gets the filename from a path
+ *
+ * @param path
+ * @return char*
+ */
+char *fs_fname_from_path(char *path);
 
 #endif /* FS_H */

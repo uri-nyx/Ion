@@ -1,12 +1,128 @@
 	#bank text
 	#bank data
+	;#globl	CIon_priority_level
+CIon_priority_level:	#d32	7
 	;#globl	Cglobal_ctx
 	Cglobal_ctx:	#res 68
 	Chp:	#res 28
 	Cbitset:	#res 2052
 	;#globl	Cstr
 	Cstr:	#res 104
+	Ct:	#res 4000
+	Ckernel_task:	#res 40
+	Csubtask:	#res 4
+	Ctask3:	#res 4
+	Cidle_task:	#res 4
+	;#globl	Ctask_return
+Ctask_return:	#d32	0
 	#bank text
+	;#globl	Csyscall_exit
+	#align 32
+Csyscall_exit:	push	fp, sp
+	mv	fp, sp
+	#bank data
+L2:
+	#d8	"E"
+	#d8	"x"
+	#d8	"i"
+	#d8	"t"
+	#d8	32
+	#d8	"S"
+	#d8	"y"
+	#d8	"s"
+	#d8	"c"
+	#d8	"a"
+	#d8	"l"
+	#d8	"l"
+	#d8	33
+	#d8	32
+	#d8	91
+	#d8	37
+	#d8	"d"
+	#d8	93
+	#d8	10
+	#d8	0
+	#bank text
+	lw	a0, 8(fp)
+	push	a0, sp
+	la	a0, L2
+	push	a0, sp
+	la	a0, Cglobal_ctx
+	push	a0, sp
+	push	ra, sp
+	call	Ctxtmod_printf
+	pop	ra, sp
+	addi	sp, sp, 12
+	lw	a0, 8(fp)
+	ssw	a0, Ctask_return, t0
+	push	ra, sp
+	call	C_kernel_reenter
+	pop	ra, sp
+	j	L1
+L1:
+	pop	fp, sp
+	ret
+	;#globl	Cexception_privilege
+	#align 32
+Cexception_privilege:	push	fp, sp
+	mv	fp, sp
+	li	a0, 48879
+	push	a0, sp
+	push	ra, sp
+	call	Ctrace
+	pop	ra, sp
+	addi	sp, sp, 4
+	#bank data
+L4:
+	#d8	"P"
+	#d8	"r"
+	#d8	"i"
+	#d8	"v"
+	#d8	"i"
+	#d8	"l"
+	#d8	"e"
+	#d8	"g"
+	#d8	"e"
+	#d8	32
+	#d8	"v"
+	#d8	"i"
+	#d8	"o"
+	#d8	"l"
+	#d8	"a"
+	#d8	"t"
+	#d8	"i"
+	#d8	"o"
+	#d8	"n"
+	#d8	32
+	#d8	"e"
+	#d8	"x"
+	#d8	"c"
+	#d8	"e"
+	#d8	"p"
+	#d8	"t"
+	#d8	"i"
+	#d8	"o"
+	#d8	"n"
+	#d8	33
+	#d8	10
+	#d8	0
+	#bank text
+	la	a0, L4
+	push	a0, sp
+	la	a0, Cglobal_ctx
+	push	a0, sp
+	push	ra, sp
+	call	Ctxtmod_printf
+	pop	ra, sp
+	addi	sp, sp, 8
+	push	ra, sp
+	call	C_kernel_reenter
+	pop	ra, sp
+	li	a0, -1
+	j	L3
+L3:
+	pop	fp, sp
+	ret
 	;#globl	Ckinit
 	#align 32
 Ckinit:	push	fp, sp
@@ -22,14 +138,28 @@ Ckinit:	push	fp, sp
 	call	Cpaging_init
 	pop	ra, sp
 	addi	sp, sp, 4
-L1:
+L5:
+	pop	fp, sp
+	ret
+	;#globl	Ckernel_idle_task
+	#align 32
+Ckernel_idle_task:	push	fp, sp
+	mv	fp, sp
+L7:
+	j	L8
+L10:
+	j	L7
+L8:
+	j	L10
+L9:
+L6:
 	pop	fp, sp
 	ret
 	;#globl	Ckmain
 	#align 32
 Ckmain:	push	fp, sp
 	mv	fp, sp
-	addi	sp, sp, -312
+	addi	sp, sp, -448
 	la	a0, Cglobal_ctx
 	push	a0, sp
 	li	a0, 28
@@ -185,21 +315,21 @@ Ckmain:	push	fp, sp
 	call	Ctxtmod_clear
 	pop	ra, sp
 	addi	sp, sp, 4
-	addi	a0, fp, -76
+	addi	a0, fp, -80
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
 	sw	a0, 0(a1)
-	addi	a0, fp, -76
+	addi	a0, fp, -80
 	push	a0, sp
 	li	a0, 4
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 1
+	li	a0, 0
 	pop	a1, sp
 	sw	a0, 0(a1)
-	addi	a0, fp, -76
+	addi	a0, fp, -80
 	push	a0, sp
 	li	a0, 12
 	pop	a1, sp
@@ -208,7 +338,39 @@ Ckmain:	push	fp, sp
 	li	a0, 512
 	pop	a1, sp
 	sw	a0, 0(a1)
-	addi	a0, fp, -76
+	addi	a0, fp, -80
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 256
+	pop	a1, sp
+	sw	a0, 0(a1)
+	addi	a0, fp, -96
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sw	a0, 0(a1)
+	addi	a0, fp, -96
+	push	a0, sp
+	li	a0, 4
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 1
+	pop	a1, sp
+	sw	a0, 0(a1)
+	addi	a0, fp, -96
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 512
+	pop	a1, sp
+	sw	a0, 0(a1)
+	addi	a0, fp, -96
 	push	a0, sp
 	li	a0, 8
 	pop	a1, sp
@@ -235,6 +397,25 @@ Ckmain:	push	fp, sp
 	li	a0, 15327232
 	pop	a1, sp
 	sw	a0, 0(a1)
+	la	a0, Csyscall
+	push	a0, sp
+	li	a0, 32
+	push	a0, sp
+	push	ra, sp
+	call	Cregister_interrupt_handler
+	pop	ra, sp
+	addi	sp, sp, 8
+	la	a0, Cexception_privilege
+	push	a0, sp
+	li	a0, 6
+	push	a0, sp
+	push	ra, sp
+	call	Cregister_interrupt_handler
+	pop	ra, sp
+	addi	sp, sp, 8
+	push	ra, sp
+	call	Ctimer_init
+	pop	ra, sp
 	la	a0, Cbitset
 	push	a0, sp
 	la	a0, Chp
@@ -259,1376 +440,241 @@ Ckmain:	push	fp, sp
 	call	Cdisk_istall_drivers
 	pop	ra, sp
 	addi	sp, sp, 12
-	addi	a0, fp, -156
+	addi	a0, fp, -196
 	push	a0, sp
 	push	ra, sp
 	call	Cfat12_init
 	pop	ra, sp
 	addi	sp, sp, 4
-	addi	a0, fp, -76
+	addi	a0, fp, -268
 	push	a0, sp
-	addi	a0, fp, -156
+	push	ra, sp
+	call	Cfat12_init
+	pop	ra, sp
+	addi	sp, sp, 4
+	addi	a0, fp, -80
+	push	a0, sp
+	addi	a0, fp, -196
 	push	a0, sp
 	push	ra, sp
 	call	Cfat12_mount
 	pop	ra, sp
 	addi	sp, sp, 8
-	li	a0, 1
+	addi	a0, fp, -96
 	push	a0, sp
-	addi	a0, fp, -156
+	addi	a0, fp, -268
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_mount
+	pop	ra, sp
+	addi	sp, sp, 8
+	li	a0, 0
+	push	a0, sp
+	addi	a0, fp, -196
 	push	a0, sp
 	push	ra, sp
 	call	Cfs_register_fs
 	pop	ra, sp
 	addi	sp, sp, 8
-	li	a0, 256
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	#bank data
-L3:
-	#d8	"H"
-	#d8	"E"
-	#d8	"L"
-	#d8	"L"
-	#d8	"O"
-	#d8	46
-	#d8	"C"
-	#d8	"O"
-	#d8	"M"
-	#d8	0
-	#d8	0
-	#d8	0
-	#bank text
-	la	a0, L3
-	push	a0, sp
-	addi	a0, fp, -236
-	push	a0, sp
-	addi	a0, fp, -156
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_find
-	pop	ra, sp
-	addi	sp, sp, 12
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	#bank data
-L4:
-	#d8	"F"
-	#d8	"i"
-	#d8	"l"
-	#d8	"e"
-	#d8	32
-	#d8	"f"
-	#d8	"o"
-	#d8	"u"
-	#d8	"n"
-	#d8	"d"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	44
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	10
-	#d8	0
-	#bank text
-	addi	a0, fp, -236
-	push	a0, sp
-	li	a0, 36
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -236
-	push	a0, sp
-	la	a0, L4
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 16
-	li	a0, 32
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	addi	a0, fp, -236
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_read
-	pop	ra, sp
-	addi	sp, sp, 12
-	addi	a0, fp, -300
-	push	a0, sp
-	li	a0, 4
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	li	a0, 4
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	pop	a1, sp
-	sw	a0, 0(a1)
-	la	a0, Cbitset
-	push	a0, sp
 	li	a0, 1
 	push	a0, sp
-	li	a0, 0
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -312
-	push	a0, sp
-	addi	a0, fp, -300
+	addi	a0, fp, -268
 	push	a0, sp
 	push	ra, sp
-	call	Calloc_pages_contiguous
-	pop	ra, sp
-	addi	sp, sp, 24
-	addi	a0, fp, -300
-	push	a0, sp
-	li	a0, 4
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	li	a0, 16
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -300
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -300
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -312
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	la	a0, Cbitset
-	push	a0, sp
-	li	a0, 0
-	push	a0, sp
-	li	a0, 1
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	li	a0, 20
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 1
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	addi	a0, fp, -312
-	push	a0, sp
-	addi	a0, fp, -300
-	push	a0, sp
-	push	ra, sp
-	call	Calloc_pages_contiguous
-	pop	ra, sp
-	addi	sp, sp, 24
-	li	a0, 0
-	push	a0, sp
-	li	a0, 0
-	push	a0, sp
-	addi	a0, fp, -236
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_seek
-	pop	ra, sp
-	addi	sp, sp, 12
-	li	a0, 512
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	li	a0, 4
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -236
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_read
-	pop	ra, sp
-	addi	sp, sp, 12
-	li	a0, 0
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	li	a0, 16
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -236
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_seek
-	pop	ra, sp
-	addi	sp, sp, 12
-	li	a0, 256
-	push	a0, sp
-	addi	a0, fp, -44
-	push	a0, sp
-	li	a0, 16
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -236
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_read
-	pop	ra, sp
-	addi	sp, sp, 12
-	addi	a0, fp, -44
-	lw	a0, 0(a0)
-	lw	a0, 0(a0)
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	li	a0, 10
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_putc
+	call	Cfs_register_fs
 	pop	ra, sp
 	addi	sp, sp, 8
-	#bank data
-L5:
-	#d8	"N"
-	#d8	"e"
-	#d8	"x"
-	#d8	"t"
-	#d8	32
-	#d8	"f"
-	#d8	"r"
-	#d8	"e"
-	#d8	"e"
-	#d8	32
-	#d8	"c"
-	#d8	"l"
-	#d8	"u"
-	#d8	"s"
-	#d8	"t"
-	#d8	"e"
-	#d8	"r"
-	#d8	32
-	#d8	"i"
-	#d8	"n"
-	#d8	32
-	#d8	"d"
-	#d8	"e"
-	#d8	"v"
-	#d8	"i"
-	#d8	"c"
-	#d8	"e"
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	10
-	#d8	0
-	#bank text
-	li	a0, 0
-	push	a0, sp
-	addi	a0, fp, -156
+	la	a0, Ckernel_task
 	push	a0, sp
 	push	ra, sp
-	call	Cfat12_get_cluster
-	pop	ra, sp
-	addi	sp, sp, 8
-	push	a0, sp
-	addi	a0, fp, -156
-	push	a0, sp
-	li	a0, 36
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 4
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	la	a0, L5
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 16
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 24
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 16
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sb	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 20
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 84
-	pop	a1, sp
-	sb	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 1
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 88
-	pop	a1, sp
-	sb	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 2
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 84
-	pop	a1, sp
-	sb	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 40
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 1
-	push	a0, sp
-	addi	a0, fp, -156
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_get_cluster
-	pop	ra, sp
-	addi	sp, sp, 8
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 12
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 32
-	pop	a1, sp
-	sb	a0, 0(a1)
-	#bank data
-L6:
-	#d8	"H"
-	#d8	"E"
-	#d8	"L"
-	#d8	"L"
-	#d8	"O"
-	#d8	32
-	#d8	32
-	#d8	32
-	#d8	0
-	#d8	0
-	#d8	0
-	#d8	0
-	#bank text
-	la	a0, L6
-	sw	a0, -60(fp)
-	li	a0, 0
-	sw	a0, -48(fp)
-L7:
-	lw	a0, -48(fp)
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	blt	a1, a0, L11
-	j	L9
-L11:
-	j	L8
-L10:
-	lw	a0, -48(fp)
-	lw	t0, -48(fp)
-	addi	t0, t0, 1; cginclw
-	sw	t0, -48(fp)
-	j	L7
-L8:
-	addi	a0, fp, -288
-	push	a0, sp
-	lw	a0, -48(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	lw	a0, -48(fp)
-	push	a0, sp
-	lw	a0, -60(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lbu	a0, 0(a0);notaligned
-	pop	a1, sp
-	sb	a0, 0(a1)
-	j	L10
-L9:
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 28
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 32
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 36
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	addi	a0, fp, -288
-	push	a0, sp
-	li	a0, 44
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-	li	a0, 16384
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
+	call	Cmultitasking_init
 	pop	ra, sp
 	addi	sp, sp, 4
 	#bank data
 L12:
-	#d8	"D"
-	#d8	"O"
-	#d8	"C"
 	#d8	"S"
-	#d8	47
-	#d8	"H"
-	#d8	"E"
-	#d8	"L"
-	#d8	"L"
-	#d8	"O"
-	#d8	46
 	#d8	"T"
-	#d8	"X"
-	#d8	"T"
+	#d8	"A"
+	#d8	"S"
+	#d8	"K"
+	#d8	0
 	#d8	0
 	#d8	0
 	#bank text
+	la	a0, Canother_task
+	push	a0, sp
+	li	a0, 15007744
+	push	a0, sp
 	la	a0, L12
 	push	a0, sp
-	addi	a0, fp, -288
-	push	a0, sp
-	addi	a0, fp, -156
-	push	a0, sp
 	push	ra, sp
-	call	Cfat12_create_entry
+	call	Ccreate_task
 	pop	ra, sp
 	addi	sp, sp, 12
+	ssw	a0, Csubtask, t0
 	#bank data
 L13:
-	#d8	"0"
-	#d8	9
-	#d8	"L"
-	#d8	"o"
-	#d8	"r"
-	#d8	"e"
-	#d8	"m"
-	#d8	32
-	#d8	"i"
-	#d8	"p"
-	#d8	"s"
-	#d8	"u"
-	#d8	"m"
-	#d8	32
-	#d8	"d"
-	#d8	"o"
-	#d8	"l"
-	#d8	"o"
-	#d8	"r"
-	#d8	32
-	#d8	"s"
-	#d8	"i"
-	#d8	"t"
-	#d8	32
-	#d8	"a"
-	#d8	"m"
-	#d8	"e"
-	#d8	"t"
-	#d8	44
-	#d8	32
-	#d8	"c"
-	#d8	"o"
-	#d8	"n"
-	#d8	"s"
-	#d8	"e"
-	#d8	"c"
-	#d8	"t"
-	#d8	"e"
-	#d8	"t"
-	#d8	"u"
-	#d8	"r"
-	#d8	32
-	#d8	"a"
-	#d8	"d"
-	#d8	"i"
-	#d8	"p"
-	#d8	"i"
-	#d8	"s"
-	#d8	"c"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	"e"
-	#d8	"l"
-	#d8	"i"
-	#d8	"t"
-	#d8	46
-	#d8	32
-	#d8	"D"
-	#d8	"o"
-	#d8	"n"
-	#d8	"e"
-	#d8	"c"
-	#d8	32
-	#d8	"i"
-	#d8	"d"
-	#d8	32
-	#d8	"n"
-	#d8	"i"
-	#d8	"b"
-	#d8	"h"
-	#d8	32
-	#d8	"e"
-	#d8	"u"
-	#d8	32
-	#d8	"o"
-	#d8	"d"
-	#d8	"i"
-	#d8	"o"
-	#d8	32
-	#d8	"e"
-	#d8	"l"
-	#d8	"e"
-	#d8	"i"
-	#d8	"f"
-	#d8	"e"
-	#d8	"n"
-	#d8	"d"
-	#d8	32
-	#d8	"d"
-	#d8	"i"
-	#d8	"c"
-	#d8	"t"
-	#d8	"u"
-	#d8	"m"
-	#d8	32
-	#d8	"a"
-	#d8	"c"
-	#d8	32
-	#d8	"a"
-	#d8	"t"
-	#d8	32
-	#d8	"f"
-	#d8	"e"
-	#d8	"l"
-	#d8	"i"
-	#d8	"s"
-	#d8	46
-	#d8	32
-	#d8	"P"
-	#d8	"r"
-	#d8	"o"
-	#d8	"i"
-	#d8	"n"
-	#d8	32
-	#d8	"f"
-	#d8	"i"
-	#d8	"n"
-	#d8	"i"
-	#d8	"b"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"n"
-	#d8	"e"
-	#d8	"c"
-	#d8	32
-	#d8	"p"
-	#d8	"u"
-	#d8	"r"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"q"
-	#d8	"u"
-	#d8	"i"
-	#d8	"s"
-	#d8	32
-	#d8	"f"
-	#d8	"i"
-	#d8	"n"
-	#d8	"i"
-	#d8	"b"
-	#d8	"u"
-	#d8	"s"
-	#d8	46
-	#d8	32
-	#d8	"N"
-	#d8	"u"
-	#d8	"n"
-	#d8	"c"
-	#d8	32
-	#d8	"q"
-	#d8	"u"
-	#d8	"a"
-	#d8	"m"
-	#d8	32
-	#d8	"e"
-	#d8	"r"
-	#d8	"o"
-	#d8	"s"
-	#d8	44
-	#d8	32
-	#d8	"t"
-	#d8	"e"
-	#d8	"m"
-	#d8	"p"
-	#d8	"o"
-	#d8	"r"
-	#d8	32
-	#d8	"v"
-	#d8	"e"
-	#d8	"l"
-	#d8	32
-	#d8	"p"
-	#d8	"o"
-	#d8	"r"
-	#d8	"t"
-	#d8	"t"
-	#d8	"i"
-	#d8	"t"
-	#d8	"o"
-	#d8	"r"
-	#d8	32
-	#d8	"a"
-	#d8	44
-	#d8	32
-	#d8	"p"
-	#d8	"l"
-	#d8	"a"
-	#d8	"c"
-	#d8	"e"
-	#d8	"r"
-	#d8	"a"
-	#d8	"t"
-	#d8	32
-	#d8	"s"
-	#d8	"e"
-	#d8	"d"
-	#d8	32
-	#d8	"e"
-	#d8	"x"
-	#d8	46
-	#d8	32
-	#d8	"V"
-	#d8	"i"
-	#d8	"v"
-	#d8	"a"
-	#d8	"m"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"n"
-	#d8	"o"
-	#d8	"n"
-	#d8	32
-	#d8	"t"
-	#d8	"e"
-	#d8	"m"
-	#d8	"p"
-	#d8	"o"
-	#d8	"r"
-	#d8	32
-	#d8	"l"
-	#d8	"o"
-	#d8	"r"
-	#d8	"e"
-	#d8	"m"
-	#d8	46
-	#d8	32
-	#d8	"U"
-	#d8	"t"
-	#d8	32
-	#d8	"a"
-	#d8	"l"
-	#d8	"i"
-	#d8	"q"
-	#d8	"u"
-	#d8	"a"
-	#d8	"m"
-	#d8	32
-	#d8	"l"
-	#d8	"a"
-	#d8	"c"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"n"
-	#d8	"u"
-	#d8	"l"
-	#d8	"l"
-	#d8	"a"
-	#d8	44
-	#d8	32
-	#d8	"l"
-	#d8	"a"
-	#d8	"c"
-	#d8	"i"
-	#d8	"n"
-	#d8	"i"
-	#d8	"a"
-	#d8	32
-	#d8	"v"
-	#d8	"u"
-	#d8	"l"
-	#d8	"p"
-	#d8	"u"
-	#d8	"t"
-	#d8	"a"
-	#d8	"t"
-	#d8	"e"
-	#d8	32
-	#d8	"s"
-	#d8	"e"
-	#d8	"m"
-	#d8	32
-	#d8	"v"
-	#d8	"u"
-	#d8	"l"
-	#d8	"p"
-	#d8	"u"
-	#d8	"t"
-	#d8	"a"
-	#d8	"t"
-	#d8	"e"
-	#d8	32
-	#d8	"a"
-	#d8	46
-	#d8	32
-	#d8	"D"
-	#d8	"o"
-	#d8	"n"
-	#d8	"e"
-	#d8	"c"
-	#d8	32
-	#d8	"l"
-	#d8	"u"
-	#d8	"c"
-	#d8	"t"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"m"
-	#d8	"a"
-	#d8	"x"
-	#d8	"i"
-	#d8	"m"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"r"
-	#d8	"i"
-	#d8	"s"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"v"
-	#d8	"e"
-	#d8	"l"
-	#d8	32
-	#d8	"a"
-	#d8	"l"
-	#d8	"i"
-	#d8	"q"
-	#d8	"u"
-	#d8	"e"
-	#d8	"t"
-	#d8	46
-	#d8	32
+	#d8	"T"
 	#d8	"A"
-	#d8	"e"
-	#d8	"n"
-	#d8	"e"
-	#d8	"a"
-	#d8	"n"
-	#d8	32
-	#d8	"s"
-	#d8	"e"
-	#d8	"d"
-	#d8	32
-	#d8	"l"
-	#d8	"a"
-	#d8	"c"
-	#d8	"i"
-	#d8	"n"
-	#d8	"i"
-	#d8	"a"
-	#d8	32
-	#d8	"a"
-	#d8	"u"
-	#d8	"g"
-	#d8	"u"
-	#d8	"e"
-	#d8	46
-	#d8	32
-	#d8	"A"
-	#d8	"l"
-	#d8	"i"
-	#d8	"q"
-	#d8	"u"
-	#d8	"a"
-	#d8	"m"
-	#d8	32
-	#d8	"v"
-	#d8	"i"
-	#d8	"t"
-	#d8	"a"
-	#d8	"e"
-	#d8	32
-	#d8	"r"
-	#d8	"h"
-	#d8	"o"
-	#d8	"n"
-	#d8	"c"
-	#d8	"u"
-	#d8	"s"
-	#d8	32
-	#d8	"m"
-	#d8	"a"
-	#d8	"g"
-	#d8	"n"
-	#d8	"a"
-	#d8	46
-	#d8	32
-	#d8	"C"
-	#d8	"u"
-	#d8	"r"
-	#d8	"a"
-	#d8	"b"
-	#d8	"i"
-	#d8	"t"
-	#d8	"u"
-	#d8	"r"
-	#d8	32
-	#d8	"v"
-	#d8	"e"
-	#d8	"l"
-	#d8	32
-	#d8	"e"
-	#d8	"f"
-	#d8	"f"
-	#d8	"i"
-	#d8	"c"
-	#d8	"i"
-	#d8	"t"
-	#d8	"u"
-	#d8	"r"
-	#d8	32
-	#d8	"m"
-	#d8	"a"
-	#d8	"g"
-	#d8	"n"
-	#d8	"a"
-	#d8	46
-	#d8	32
-	#d8	"M"
-	#d8	"a"
-	#d8	"e"
-	#d8	"c"
-	#d8	"e"
-	#d8	"n"
-	#d8	"a"
-	#d8	"s"
-	#d8	32
-	#d8	"c"
-	#d8	"o"
-	#d8	"n"
-	#d8	"v"
-	#d8	"a"
-	#d8	"l"
-	#d8	"l"
-	#d8	"i"
-	#d8	"s"
-	#d8	32
-	#d8	"s"
-	#d8	"i"
-	#d8	"t"
-	#d8	32
-	#d8	"a"
-	#d8	"m"
-	#d8	"e"
-	#d8	"t"
-	#d8	32
-	#d8	"q"
-	#d8	"u"
-	#d8	"a"
-	#d8	"m"
-	#d8	32
-	#d8	"s"
-	#d8	"e"
-	#d8	"d"
-	#d8	32
-	#d8	"t"
-	#d8	"i"
-	#d8	"n"
-	#d8	"c"
-	#d8	"i"
-	#d8	"d"
-	#d8	"u"
-	#d8	"n"
-	#d8	"t"
-	#d8	46
-	#d8	32
-	#d8	"I"
-	#d8	"n"
-	#d8	32
-	#d8	"h"
-	#d8	"a"
-	#d8	"c"
-	#d8	32
-	#d8	"h"
-	#d8	"a"
-	#d8	"b"
-	#d8	"i"
-	#d8	"t"
-	#d8	"a"
-	#d8	"s"
-	#d8	"s"
-	#d8	"e"
-	#d8	32
-	#d8	"p"
-	#d8	"l"
-	#d8	"a"
-	#d8	"t"
-	#d8	"e"
-	#d8	"a"
-	#d8	32
-	#d8	"d"
-	#d8	"i"
-	#d8	"c"
-	#d8	"t"
-	#d8	"u"
-	#d8	"m"
-	#d8	"s"
-	#d8	"t"
-	#d8	32
-	#d8	"n"
-	#d8	"i"
-	#d8	"s"
-	#d8	"i"
-	#d8	46
+	#d8	"S"
+	#d8	"K"
+	#d8	"3"
+	#d8	0
 	#d8	0
 	#d8	0
 	#bank text
+	la	a0, Cyet_another
+	push	a0, sp
+	li	a0, 14995456
+	push	a0, sp
 	la	a0, L13
-	sw	a0, -60(fp)
-	li	a0, 1911
 	push	a0, sp
 	push	ra, sp
-	call	Ctrace
+	call	Ccreate_task
 	pop	ra, sp
-	addi	sp, sp, 4
-	li	a0, 80
-	push	a0, sp
+	addi	sp, sp, 12
+	ssw	a0, Ctask3, t0
 	push	ra, sp
-	call	Ckmalloc
+	call	Cp_ready_tasks
 	pop	ra, sp
-	addi	sp, sp, 4
-	sw	a0, -240(fp)
+	push	ra, sp
+	call	C_sti
+	pop	ra, sp
+TLlkmain_l:
+	push	ra, sp
+	call	Cion_lock_scheduler
+	pop	ra, sp
+	push	ra, sp
+	call	Ctask_schedule
+	pop	ra, sp
+	push	ra, sp
+	call	Cion_unlock_scheduler
+	pop	ra, sp
+	j	TLlkmain_l
+L11:
+	addi	sp, sp, 448
+	pop	fp, sp
+	ret
 	#bank data
 L14:
-	#d8	"D"
-	#d8	"O"
-	#d8	"C"
-	#d8	"S"
-	#d8	47
-	#d8	"H"
-	#d8	"E"
-	#d8	"L"
-	#d8	"L"
-	#d8	"O"
-	#d8	46
-	#d8	"T"
-	#d8	"X"
-	#d8	"T"
-	#d8	0
-	#d8	0
+	#d32	0
 	#bank text
-	li	a0, 0
-	push	a0, sp
-	la	a0, L14
-	push	a0, sp
-	addi	a0, fp, -156
-	push	a0, sp
-	li	a0, 36
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	lw	a0, -240(fp)
-	push	a0, sp
+	;#globl	Canother_task
+	#align 32
+Canother_task:	push	fp, sp
+	mv	fp, sp
 	push	ra, sp
-	call	Cfat12_open
+	call	Cion_unlock_scheduler
 	pop	ra, sp
-	addi	sp, sp, 16
-	push	a0, sp
+TLlanother_task_l:
 	push	ra, sp
-	call	Ctrace
+	call	Cion_lock_scheduler
 	pop	ra, sp
-	addi	sp, sp, 4
-	li	a0, 1
-	push	a0, sp
-	li	a0, 0
-	push	a0, sp
-	lw	a0, -240(fp)
-	push	a0, sp
 	push	ra, sp
-	call	Cfat12_seek
+	call	Ctask_schedule
 	pop	ra, sp
-	addi	sp, sp, 12
+	push	ra, sp
+	call	Cion_unlock_scheduler
+	pop	ra, sp
+	j	TLlanother_task_l
 	li	a0, 0
-	sw	a0, -48(fp)
-L15:
-	lw	a0, -48(fp)
-	push	a0, sp
-	li	a0, 10
-	pop	a1, sp
-	blt	a1, a0, L19
-	j	L17
-L19:
-	j	L16
-L18:
-	lw	a0, -48(fp)
-	lw	t0, -48(fp)
-	addi	t0, t0, 1; cginclw
-	sw	t0, -48(fp)
 	j	L15
-L16:
-	lw	a0, -48(fp)
-	push	a0, sp
-	li	a0, 2800
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
+L15:
+	pop	fp, sp
+	ret
+	;#globl	Cyet_another
+	#align 32
+Cyet_another:	push	fp, sp
+	mv	fp, sp
 	push	ra, sp
-	call	Ctrace
+	call	Cion_unlock_scheduler
 	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -60(fp)
-	push	a0, sp
-	lw	a0, -48(fp)
-	push	a0, sp
-	li	a0, 48
-	pop	a1, sp
-	add	a0, a1, a0
-	pop	a1, sp
-	sb	a0, 0(a1)
-	lw	a0, -60(fp)
-	push	a0, sp
+TLlyet_another_l:
 	push	ra, sp
-	call	Cstrlen
+	call	Cp_ready_tasks
 	pop	ra, sp
-	addi	sp, sp, 4
-	push	a0, sp
-	lw	a0, -60(fp)
-	push	a0, sp
-	lw	a0, -240(fp)
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_write
-	pop	ra, sp
-	addi	sp, sp, 12
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	j	L18
+	#bank data
 L17:
-	#bank data
-L20:
-	#d8	10
-	#d8	9
-	#d8	"V"
-	#d8	"i"
-	#d8	"v"
-	#d8	"i"
-	#d8	"a"
-	#d8	32
-	#d8	"u"
-	#d8	"n"
-	#d8	32
-	#d8	"h"
-	#d8	"i"
-	#d8	"d"
-	#d8	"a"
+	#d8	"S"
 	#d8	"l"
+	#d8	"e"
+	#d8	"e"
+	#d8	"p"
+	#d8	"i"
+	#d8	"n"
 	#d8	"g"
-	#d8	"o"
-	#d8	46
-	#d8	46
-	#d8	46
-	#d8	0
-	#d8	0
-	#d8	0
-	#bank text
-	la	a0, L20
-	sw	a0, -60(fp)
-	lw	a0, -60(fp)
-	push	a0, sp
-	push	ra, sp
-	call	Cstrlen
-	pop	ra, sp
-	addi	sp, sp, 4
-	push	a0, sp
-	lw	a0, -60(fp)
-	push	a0, sp
-	lw	a0, -240(fp)
-	push	a0, sp
-	push	ra, sp
-	call	Cfat12_write
-	pop	ra, sp
-	addi	sp, sp, 12
-TLlkmain_time:
-	addi	a0, fp, -104
-	push	a0, sp
-	push	ra, sp
-	call	Cclock_gettime
-	pop	ra, sp
-	addi	sp, sp, 4
-	#bank data
-L21:
-	#d8	"Y"
-	#d8	"E"
-	#d8	"A"
-	#d8	"R"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"M"
-	#d8	"O"
-	#d8	"N"
-	#d8	"T"
-	#d8	"H"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"D"
-	#d8	"A"
-	#d8	"Y"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"H"
-	#d8	"O"
-	#d8	"U"
-	#d8	"R"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"M"
-	#d8	"I"
-	#d8	"N"
-	#d8	"U"
-	#d8	"T"
-	#d8	"E"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"S"
-	#d8	"E"
-	#d8	"C"
-	#d8	"O"
-	#d8	"N"
-	#d8	"D"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"M"
-	#d8	"S"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
 	#d8	10
 	#d8	0
+	#d8	0
+	#d8	0
 	#bank text
-	addi	a0, fp, -104
-	push	a0, sp
-	li	a0, 24
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -104
-	push	a0, sp
-	li	a0, 20
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -104
-	push	a0, sp
-	li	a0, 16
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -104
-	push	a0, sp
-	li	a0, 12
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -104
-	push	a0, sp
-	li	a0, 8
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -104
-	push	a0, sp
-	li	a0, 4
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	addi	a0, fp, -104
-	lw	a0, 0(a0)
-	push	a0, sp
-	la	a0, L21
+	la	a0, L17
 	push	a0, sp
 	la	a0, Cglobal_ctx
 	push	a0, sp
 	push	ra, sp
 	call	Ctxtmod_printf
 	pop	ra, sp
-	addi	sp, sp, 36
-L22:
-	j	L23
-L25:
-	j	L22
-L23:
-	j	L25
-L24:
-L2:
-	addi	sp, sp, 312
+	addi	sp, sp, 8
+	li	a0, 1
+	push	a0, sp
+	push	ra, sp
+	call	Ctask_sleep
+	pop	ra, sp
+	addi	sp, sp, 4
+	#bank data
+L18:
+	#d8	"W"
+	#d8	"o"
+	#d8	"k"
+	#d8	"e"
+	#d8	32
+	#d8	"u"
+	#d8	"p"
+	#d8	10
+	#d8	0
+	#d8	0
+	#d8	0
+	#d8	0
+	#bank text
+	la	a0, L18
+	push	a0, sp
+	la	a0, Cglobal_ctx
+	push	a0, sp
+	push	ra, sp
+	call	Ctxtmod_printf
+	pop	ra, sp
+	addi	sp, sp, 8
+	#bank data
+L19:
+	#d8	"T"
+	#d8	"i"
+	#d8	"m"
+	#d8	"e"
+	#d8	58
+	#d8	32
+	#d8	37
+	#d8	"d"
+	#d8	10
+	#d8	0
+	#d8	0
+	#d8	0
+	#bank text
+	push	ra, sp
+	call	Cclock_read_counter
+	pop	ra, sp
+	push	a0, sp
+	la	a0, L19
+	push	a0, sp
+	la	a0, Cglobal_ctx
+	push	a0, sp
+	push	ra, sp
+	call	Ctxtmod_printf
+	pop	ra, sp
+	addi	sp, sp, 12
+	j	TLlyet_another_l
+	li	a0, 0
+	j	L16
+L16:
 	pop	fp, sp
 	ret

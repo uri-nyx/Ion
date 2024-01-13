@@ -5,9 +5,13 @@
 #include <string.h>
 
 extern _mmu_enable(int addr);
-extern int protected_entry;
-extern int KernelPhys;
-extern int KernelEnd;
+extern _mmu_switch(int pt);
+extern int               protected_entry;
+extern int               KernelPhys;
+extern int               KernelEnd;
+struct ion_frame_bitset *paging_ctx;
+
+int paging_currpt = 0;
 
 /* Set a bit in the bitset */
 static void set_frame(int frame_addr, struct ion_frame_bitset *bitset)
@@ -98,9 +102,9 @@ int alloc_frame(struct ion_page *page, int writeable, int executable,
                 page->perm |= (writeable) ? 0x2 : 0;
                 page->perm |= (executable) ? 0x1 : 0;
                 page->frame = idx * 0x1000;
-                mmu_map(page->frame, page->page, page->perm);
+                mmu_map(page->frame, page->page, page->perm, paging_currpt);
         }
-        
+
         return 0;
 }
 
@@ -112,7 +116,7 @@ void free_frame(struct ion_page *page, struct ion_frame_bitset *bitset)
         } else {
                 clear_frame(frame, bitset);
                 page->frame = 0x0;
-                mmu_unmap(frame);
+                mmu_unmap(frame, paging_currpt);
         }
 }
 
@@ -125,26 +129,30 @@ int page_fault_handler()
 void paging_init(struct ion_frame_bitset *bitset)
 {
         int i;
+
+        paging_ctx = bitset;
         memset(bitset->frames, 0, (bitset->nframes / (8 * 4)));
+
+        set_frame(0, bitset);
+        mmu_map(0, 0, 0x00, paging_currpt); // THE NULL PAGE TO TRAP
 
         i = KernelPhys;
         while (i < KernelEnd) {
-                set_frame(i, bitset);
-                mmu_map(i, i, 0x1);
+                set_frame(i & 0xffffff, bitset);
+                mmu_map(i, i, 0x1, paging_currpt);
                 i += 0x1000;
         }
 
         /* Map the bss */
-        
 
         /* Map the framebuffer */
         i = 0xe51000;
         while (i < 0xE9E000) {
-                set_frame(i, bitset);
-                mmu_map(i, i, 0x0);
+                set_frame(i & 0xffffff, bitset);
+                mmu_map(i, i, 0x0, paging_currpt);
                 i += 0x1000;
         }
-       
+
         register_interrupt_handler(ISR_PAGE_FAULT, page_fault_handler);
         _mmu_enable(protected_entry);
 }

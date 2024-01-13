@@ -3,8 +3,8 @@
 
 #ifndef __LINT
 #include "include/drivers/disk.h"
-#include "include/system/fs.h"
 #include "include/system/error.h"
+#include "include/system/fs.h"
 #else
 #include "disk.h"
 #include "error.h"
@@ -30,6 +30,12 @@
 #define EBR_ID      0x27
 #define EBR_LAB     0x2B
 #define EBR_SYS     0x36
+
+#define FAT12_FREECLUSTER 0
+
+#define FAT12_O_DEFAULT   0
+#define FAT12_O_FREEENTRY 1
+#define FAT12_O_MARKEND   1
 
 #define FAT12_READ_ONLY 0x01
 #define FAT12_HIDDEN    0x02
@@ -113,7 +119,7 @@ typedef struct {
 } fat12_entry;
 
 struct fat_time {
-        int time, date;
+        int  time, date;
         char ms;
 };
 
@@ -133,7 +139,7 @@ void fat12_init(ion_fs *fat12);
  * @param[out] err the error on failure
  * @return ion_file* a file descriptor on success, NULL on error
  */
-int fat12_open(ion_file *outfile, struct disk *device, char *path, int flags);
+int fat12_open(ion_file *outfile, struct disk *device, char *path);
 
 /**
  * @brief Closes a FAT12 file
@@ -163,27 +169,73 @@ int fat12_write(ion_file *file, void *buff, int count);
  */
 int fat12_read(ion_file *file, void *buff, int count);
 
-
 /**
  * @brief Mounts a FAT12 filesystem
- * 
+ *
  * @param fat12 the filesystem
  * @param device the device to mount
  * @return int 0 on success, otherwise an error code
  */
 int fat12_mount(ion_fs *fat12, struct disk *device);
 
-
-#define FAT12_SEEK_SET 0
-#define FAT12_SEEK_END 1
+#define FAT12_SEEK_SET  0
+#define FAT12_SEEK_CURR 1
+#define FAT12_SEEK_END  2
 /**
  * @brief Seeks an offset inside a file
- * 
+ *
  * @param file the file to seek
  * @param offset the offset to seek
  * @param flags currently 0, SEEK_SET
  * @return int 0 on success, otherwise an error code
  */
 int fat12_seek(ion_file *file, int offset, int flags);
-int fat12_create_entry(ion_fs *fat12, fat12_entry *entry, char *path);
+
+/**
+ * @brief Creates a file or truncates existing one
+ *
+ * @param fat12
+ * @param path
+ * @param flags ION_FS_RDONLY, ION_FS_SYSTEM, or 0 for a normal file
+ * @return int o on success, otherwise an error cde
+ */
+int fat12_create_file(ion_fs *fat12, char *path, int flags);
+
+/**
+ * @brief Creates a directory
+ *
+ * @param fat12
+ * @param path
+ * @return int 0 on success, otherwise an error code
+ */
+int fat12_create_dir(ion_fs *fat12, char *path);
+
+/**
+ * @brief Marks a file as deleted and deallocates its clusters
+ *
+ * @param fat12
+ * @param path
+ * @return int 0 on success, otherwise an error code
+ */
+int fat12_delete_file(ion_fs *fat12, char *path);
+
+/**
+ * @brief Marks an empty directory as deleted
+ *
+ * @param fat12
+ * @param path
+ * @return int 0 on success, otherwise an error code
+ */
+int fat12_delete_dir(ion_fs *fat12, char *path);
+
+/**
+ * @brief Renames a file or directory, moving its entry if necessary
+ * 
+ * @param fat12 
+ * @param old 
+ * @param new 
+ * @return int 0 on success, otherwise an error code
+ */
+int fat12_rename(ion_fs *fat12, char *old, char *new);
+
 #endif /* FAT12_H */

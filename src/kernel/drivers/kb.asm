@@ -30,6 +30,6 @@ Ckb_setmode:
     mv      fp, sp
     lw      a0, 8(fp)
     llw     t0, Ckb_addr
-    sbd     a0, 0(t0)    ; return a raw word with the packed data
+    sbd     a0, 0(t0)  
     pop     fp, sp
     ret

@@ -15,5 +15,5 @@ __SECTION_BSS  = __SECTION_DATA + __bss_start
 
 #bankdef bss {
  #addr __SECTION_BSS
- #size __bss_size
+ #addr_end 0x1_000_000
 }

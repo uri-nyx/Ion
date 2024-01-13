@@ -1,13 +1,17 @@
-#include <stdio.h>
+struct T {
+        int res;
+        int (*f)();
+};
 
-#define MAX(a, b) ((a)>(b)?(a):(b))
+int F(int a, int b, int c)
+{
+        return a + b + c;
+}
+
 
 int main()
 {
-        printf("Hello\n");
-        goto skip;
-        printf("Hello 2\n");
-skip:
-        printf("Hello 3\n");
-        return 0;
+        int (*t)();
+        t = F;
+        return t(1, 2, 3);
 }

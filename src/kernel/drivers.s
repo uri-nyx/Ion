@@ -273,6 +273,7 @@ L19DEV:
 	#bank text
 	#bank data
 Cfat12_dont_read:	#d32	0
+Cfat12_write_zero:	#d32	0
 	#bank text
 	#align 32
 Cto_be16:	push	fp, sp
@@ -2045,7 +2046,7 @@ L74DEV:
 Cfat12_find_dir:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -164
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -2143,6 +2144,24 @@ L97DEV:
 	sw	t0, -20(fp)
 	j	L94DEV
 L95DEV:
+	lw	a0, 20(fp)
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 32
+	push	a0, sp
+	lw	a0, -20(fp)
+	pop	a1, sp
+	mul	zero, a0, a1, a0
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	beq	a1, a0, L100DEV
+	j	L99DEV
+L100DEV:
+	j	TLlfat12_find_dir_notfound
+L99DEV:
 	li	a0, 32
 	push	a0, sp
 	lw	a0, -20(fp)
@@ -2189,16 +2208,16 @@ L95DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	beq	a1, a0, L100DEV
-	j	L99DEV
-L100DEV:
+	beq	a1, a0, L102DEV
+	j	L101DEV
+L102DEV:
 	li	a0, 76
 	push	a0, sp
 	lw	a0, 16(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -2324,79 +2343,15 @@ L100DEV:
 	mul	zero, a0, a1, a0
 	pop	a1, sp
 	sw	a0, 0(a1)
-	#bank data
-L101DEV:
-	#d8	"F"
-	#d8	"I"
-	#d8	"N"
-	#d8	"D"
-	#d8	32
-	#d8	"F"
-	#d8	"i"
-	#d8	"l"
-	#d8	"e"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	44
-	#d8	32
-	#d8	"i"
-	#d8	"n"
-	#d8	32
-	#d8	"D"
-	#d8	"I"
-	#d8	"R"
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	32
-	#d8	91
-	#d8	37
-	#d8	"x"
-	#d8	93
-	#d8	44
-	#d8	32
-	#d8	"B"
-	#d8	"l"
-	#d8	"o"
-	#d8	"c"
-	#d8	"k"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	10
-	#d8	0
-	#d8	0
-	#d8	0
-	#bank text
-	li	a0, 48
+	li	a0, 32
 	push	a0, sp
 	lw	a0, 16(fp)
 	pop	a1, sp
 	add	a0, a1, a0
-	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 60
-	push	a0, sp
-	lw	a0, 12(fp)
+	li	a0, 0
 	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	lw	a0, 12(fp)
-	push	a0, sp
-	lw	a0, 24(fp)
-	push	a0, sp
-	la	a0, L101DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 24
+	sw	a0, 0(a1)
 	addi	a0, fp, -76
 	push	a0, sp
 	li	a0, 12
@@ -2407,42 +2362,121 @@ L101DEV:
 	li	a0, 16
 	pop	a1, sp
 	and	a0, a0, a1
-	beqz	a0, L102DEV
-	li	a0, 32
-	push	a0, sp
+	beqz	a0, L103DEV
 	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
 	pop	a1, sp
 	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 2
+	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+	j	L104DEV
+L103DEV:
+	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
 	push	a0, sp
 	li	a0, 1
 	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
 	sw	a0, 0(a1)
-	j	L103DEV
-L102DEV:
-	li	a0, 32
+L104DEV:
+	addi	a0, fp, -76
 	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 1
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L105DEV
 	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 0
+	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 524288
+	pop	a1, sp
+	or	a0, a0, a1
 	pop	a1, sp
 	sw	a0, 0(a1)
-L103DEV:
+L105DEV:
+	addi	a0, fp, -76
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 4
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L106DEV
+	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 131072
+	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+L106DEV:
 	li	a0, 0
 	j	L85DEV
-L99DEV:
+L101DEV:
 	j	L97DEV
 L96DEV:
 	j	L91DEV
 L90DEV:
+TLlfat12_find_dir_notfound:
 	li	a0, 32
 	push	a0, sp
 	lw	a0, 16(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 2
+	li	a0, 0
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, -46
@@ -2455,7 +2489,7 @@ L85DEV:
 Cfat12_find_root:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -160
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -2466,12 +2500,12 @@ Cfat12_find_root:	push	fp, sp
 	push	a0, sp
 	lw	a0, -76(fp)
 	pop	a1, sp
-	beq	a1, a0, L106DEV
-	j	L105DEV
-L106DEV:
+	beq	a1, a0, L109DEV
+	j	L108DEV
+L109DEV:
 	li	a0, -45
-	j	L104DEV
-L105DEV:
+	j	L107DEV
+L108DEV:
 	li	a0, 4
 	push	a0, sp
 	lw	a0, -76(fp)
@@ -2486,7 +2520,7 @@ L105DEV:
 	sw	a0, -24(fp)
 	li	a0, 0
 	sw	a0, -16(fp)
-L107DEV:
+L110DEV:
 	lw	a0, -16(fp)
 	push	a0, sp
 	li	a0, 24
@@ -2496,17 +2530,17 @@ L107DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	pop	a1, sp
-	blt	a1, a0, L111DEV
-	j	L109DEV
-L111DEV:
-	j	L108DEV
-L110DEV:
+	blt	a1, a0, L114DEV
+	j	L112DEV
+L114DEV:
+	j	L111DEV
+L113DEV:
 	lw	a0, -16(fp)
 	lw	t0, -16(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -16(fp)
-	j	L107DEV
-L108DEV:
+	j	L110DEV
+L111DEV:
 	addi	a0, fp, -160
 	push	a0, sp
 	lw	a0, 16(fp)
@@ -2522,7 +2556,7 @@ L108DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -2536,29 +2570,29 @@ L108DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	beqz	a0, L112DEV
+	beqz	a0, L115DEV
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	j	L104DEV
-L112DEV:
+	j	L107DEV
+L115DEV:
 	li	a0, 0
 	sw	a0, -20(fp)
-L113DEV:
+L116DEV:
 	lw	a0, -20(fp)
 	push	a0, sp
 	lw	a0, -24(fp)
 	pop	a1, sp
-	blt	a1, a0, L117DEV
-	j	L115DEV
-L117DEV:
-	j	L114DEV
-L116DEV:
+	blt	a1, a0, L120DEV
+	j	L118DEV
+L120DEV:
+	j	L117DEV
+L119DEV:
 	lw	a0, -20(fp)
 	lw	t0, -20(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -20(fp)
-	j	L113DEV
-L114DEV:
+	j	L116DEV
+L117DEV:
 	li	a0, 32
 	push	a0, sp
 	lw	a0, -20(fp)
@@ -2605,16 +2639,16 @@ L114DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	beq	a1, a0, L119DEV
-	j	L118DEV
-L119DEV:
+	beq	a1, a0, L122DEV
+	j	L121DEV
+L122DEV:
 	li	a0, 76
 	push	a0, sp
 	lw	a0, 12(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -2717,73 +2751,15 @@ L119DEV:
 	mul	zero, a0, a1, a0
 	pop	a1, sp
 	sw	a0, 0(a1)
-	#bank data
-L120DEV:
-	#d8	"F"
-	#d8	"I"
-	#d8	"N"
-	#d8	"D"
-	#d8	32
-	#d8	"I"
-	#d8	"N"
-	#d8	32
-	#d8	"R"
-	#d8	"O"
-	#d8	"O"
-	#d8	"T"
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	32
-	#d8	"f"
-	#d8	"i"
-	#d8	"r"
-	#d8	"s"
-	#d8	"t"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	44
-	#d8	32
-	#d8	"e"
-	#d8	"n"
-	#d8	"t"
-	#d8	"r"
-	#d8	"y"
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	10
-	#d8	0
-	#d8	0
-	#d8	0
-	#d8	0
-	#bank text
-	li	a0, 48
+	li	a0, 32
 	push	a0, sp
 	lw	a0, 12(fp)
 	pop	a1, sp
 	add	a0, a1, a0
-	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 60
-	push	a0, sp
-	lw	a0, 12(fp)
+	li	a0, 0
 	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	lw	a0, 20(fp)
-	push	a0, sp
-	la	a0, L120DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 20
+	sw	a0, 0(a1)
 	addi	a0, fp, -72
 	push	a0, sp
 	li	a0, 12
@@ -2794,47 +2770,125 @@ L120DEV:
 	li	a0, 16
 	pop	a1, sp
 	and	a0, a0, a1
-	beqz	a0, L121DEV
-	li	a0, 32
-	push	a0, sp
+	beqz	a0, L123DEV
 	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 1
-	pop	a1, sp
-	sw	a0, 0(a1)
-	j	L122DEV
-L121DEV:
-	li	a0, 32
-	push	a0, sp
 	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
 	pop	a1, sp
 	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
-L122DEV:
-	li	a0, 0
-	j	L104DEV
-L118DEV:
-	j	L116DEV
-L115DEV:
-	j	L110DEV
-L109DEV:
-	li	a0, 32
-	push	a0, sp
-	lw	a0, 12(fp)
-	pop	a1, sp
-	add	a0, a1, a0
+	lw	a0, 0(a0)
 	push	a0, sp
 	li	a0, 2
 	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+	j	L124DEV
+L123DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 1
+	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+L124DEV:
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 1
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L125DEV
+	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 524288
+	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+L125DEV:
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 4
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L126DEV
+	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 131072
+	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+L126DEV:
+	li	a0, 0
+	j	L107DEV
+L121DEV:
+	j	L119DEV
+L118DEV:
+	j	L113DEV
+L112DEV:
+	li	a0, 32
+	push	a0, sp
+	lw	a0, 12(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, -46
-	j	L104DEV
-L104DEV:
+	j	L107DEV
+L107DEV:
 	addi	sp, sp, 160
 	pop	fp, sp
 	ret
@@ -2842,7 +2896,7 @@ L104DEV:
 Cfat12_free_root_entry:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -100
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -2853,12 +2907,12 @@ Cfat12_free_root_entry:	push	fp, sp
 	push	a0, sp
 	lw	a0, -16(fp)
 	pop	a1, sp
-	beq	a1, a0, L125DEV
-	j	L124DEV
-L125DEV:
+	beq	a1, a0, L129DEV
+	j	L128DEV
+L129DEV:
 	li	a0, -45
-	j	L123DEV
-L124DEV:
+	j	L127DEV
+L128DEV:
 	li	a0, 4
 	push	a0, sp
 	lw	a0, -16(fp)
@@ -2873,7 +2927,7 @@ L124DEV:
 	sw	a0, -12(fp)
 	li	a0, 0
 	sw	a0, -4(fp)
-L126DEV:
+L130DEV:
 	lw	a0, -4(fp)
 	push	a0, sp
 	li	a0, 24
@@ -2883,17 +2937,17 @@ L126DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	pop	a1, sp
-	blt	a1, a0, L130DEV
-	j	L128DEV
-L130DEV:
-	j	L127DEV
-L129DEV:
+	blt	a1, a0, L134DEV
+	j	L132DEV
+L134DEV:
+	j	L131DEV
+L133DEV:
 	lw	a0, -4(fp)
 	lw	t0, -4(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -4(fp)
-	j	L126DEV
-L127DEV:
+	j	L130DEV
+L131DEV:
 	addi	a0, fp, -100
 	push	a0, sp
 	lw	a0, 12(fp)
@@ -2909,7 +2963,7 @@ L127DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -2923,29 +2977,29 @@ L127DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -100
 	lw	a0, 0(a0)
-	beqz	a0, L131DEV
+	beqz	a0, L135DEV
 	addi	a0, fp, -100
 	lw	a0, 0(a0)
-	j	L123DEV
-L131DEV:
+	j	L127DEV
+L135DEV:
 	li	a0, 0
 	sw	a0, -8(fp)
-L132DEV:
+L136DEV:
 	lw	a0, -8(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
 	pop	a1, sp
-	blt	a1, a0, L136DEV
-	j	L134DEV
-L136DEV:
-	j	L133DEV
-L135DEV:
+	blt	a1, a0, L140DEV
+	j	L138DEV
+L140DEV:
+	j	L137DEV
+L139DEV:
 	lw	a0, -8(fp)
 	lw	t0, -8(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -8(fp)
-	j	L132DEV
-L133DEV:
+	j	L136DEV
+L137DEV:
 	li	a0, 32
 	push	a0, sp
 	lw	a0, -8(fp)
@@ -2956,10 +3010,10 @@ L133DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	lbu	a0, 0(a0);notaligned
-	j	L138DEV
-L139DEV:
-L140DEV:
-L141DEV:
+	j	L142DEV
+L143DEV:
+L144DEV:
+L145DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	li	a0, 20
@@ -2979,28 +3033,28 @@ L141DEV:
 	lw	a0, -8(fp)
 	pop	a1, sp
 	mul	zero, a0, a1, a0
-	j	L123DEV
-	j	L137DEV
+	j	L127DEV
+	j	L141DEV
+L146DEV:
+	j	L141DEV
+	j	L141DEV
 L142DEV:
-	j	L137DEV
-	j	L137DEV
-L138DEV:
-	la	a1, L143DEV
+	la	a1, L147DEV
 	j	switch
-L143DEV:
+L147DEV:
 	#d32	3
-	#d32	0, L139DEV
-	#d32	5, L140DEV
-	#d32	229, L141DEV
-	#d32	L142DEV
-L137DEV:
-	j	L135DEV
-L134DEV:
-	j	L129DEV
-L128DEV:
+	#d32	0, L143DEV
+	#d32	5, L144DEV
+	#d32	229, L145DEV
+	#d32	L146DEV
+L141DEV:
+	j	L139DEV
+L138DEV:
+	j	L133DEV
+L132DEV:
 	li	a0, -51
-	j	L123DEV
-L123DEV:
+	j	L127DEV
+L127DEV:
 	addi	sp, sp, 100
 	pop	fp, sp
 	ret
@@ -3008,7 +3062,7 @@ L123DEV:
 Cfat12_free_dir_entry:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -104
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -3019,12 +3073,12 @@ Cfat12_free_dir_entry:	push	fp, sp
 	push	a0, sp
 	lw	a0, -20(fp)
 	pop	a1, sp
-	beq	a1, a0, L146DEV
-	j	L145DEV
-L146DEV:
+	beq	a1, a0, L150DEV
+	j	L149DEV
+L150DEV:
 	li	a0, -45
-	j	L144DEV
-L145DEV:
+	j	L148DEV
+L149DEV:
 	li	a0, 4
 	push	a0, sp
 	lw	a0, -20(fp)
@@ -3060,22 +3114,22 @@ L145DEV:
 	sw	a0, -12(fp)
 	li	a0, 0
 	sw	a0, -4(fp)
-L147DEV:
+L151DEV:
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, -16(fp)
 	pop	a1, sp
-	blt	a1, a0, L151DEV
-	j	L149DEV
-L151DEV:
-	j	L148DEV
-L150DEV:
+	blt	a1, a0, L155DEV
+	j	L153DEV
+L155DEV:
+	j	L152DEV
+L154DEV:
 	lw	a0, -4(fp)
 	lw	t0, -4(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -4(fp)
-	j	L147DEV
-L148DEV:
+	j	L151DEV
+L152DEV:
 	addi	a0, fp, -104
 	push	a0, sp
 	li	a0, 4
@@ -3097,29 +3151,29 @@ L148DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -104
 	lw	a0, 0(a0)
-	beqz	a0, L152DEV
+	beqz	a0, L156DEV
 	addi	a0, fp, -104
 	lw	a0, 0(a0)
-	j	L144DEV
-L152DEV:
+	j	L148DEV
+L156DEV:
 	li	a0, 0
 	sw	a0, -8(fp)
-L153DEV:
+L157DEV:
 	lw	a0, -8(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
 	pop	a1, sp
-	blt	a1, a0, L157DEV
-	j	L155DEV
-L157DEV:
-	j	L154DEV
-L156DEV:
+	blt	a1, a0, L161DEV
+	j	L159DEV
+L161DEV:
+	j	L158DEV
+L160DEV:
 	lw	a0, -8(fp)
 	lw	t0, -8(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -8(fp)
-	j	L153DEV
-L154DEV:
+	j	L157DEV
+L158DEV:
 	li	a0, 32
 	push	a0, sp
 	lw	a0, -8(fp)
@@ -3130,10 +3184,10 @@ L154DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	lbu	a0, 0(a0);notaligned
-	j	L159DEV
-L160DEV:
-L161DEV:
-L162DEV:
+	j	L163DEV
+L164DEV:
+L165DEV:
+L166DEV:
 	lw	a0, 20(fp)
 	push	a0, sp
 	li	a0, 36
@@ -3176,28 +3230,28 @@ L162DEV:
 	lw	a0, -8(fp)
 	pop	a1, sp
 	mul	zero, a0, a1, a0
-	j	L144DEV
-	j	L158DEV
+	j	L148DEV
+	j	L162DEV
+L167DEV:
+	j	L162DEV
+	j	L162DEV
 L163DEV:
-	j	L158DEV
-	j	L158DEV
-L159DEV:
-	la	a1, L164DEV
+	la	a1, L168DEV
 	j	switch
-L164DEV:
+L168DEV:
 	#d32	3
-	#d32	0, L160DEV
-	#d32	5, L161DEV
-	#d32	229, L162DEV
-	#d32	L163DEV
-L158DEV:
-	j	L156DEV
-L155DEV:
-	j	L150DEV
-L149DEV:
+	#d32	0, L164DEV
+	#d32	5, L165DEV
+	#d32	229, L166DEV
+	#d32	L167DEV
+L162DEV:
+	j	L160DEV
+L159DEV:
+	j	L154DEV
+L153DEV:
 	li	a0, -51
-	j	L144DEV
-L144DEV:
+	j	L148DEV
+L148DEV:
 	addi	sp, sp, 104
 	pop	fp, sp
 	ret
@@ -3205,7 +3259,7 @@ L144DEV:
 Cfat12_find:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -348
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -3216,12 +3270,12 @@ Cfat12_find:	push	fp, sp
 	push	a0, sp
 	lw	a0, -264(fp)
 	pop	a1, sp
-	beq	a1, a0, L167DEV
-	j	L166DEV
-L167DEV:
+	beq	a1, a0, L171DEV
+	j	L170DEV
+L171DEV:
 	li	a0, -45
-	j	L165DEV
-L166DEV:
+	j	L169DEV
+L170DEV:
 	addi	a0, fp, -348
 	push	a0, sp
 	li	a0, 4
@@ -3238,11 +3292,11 @@ L166DEV:
 	sw	a0, -36(fp)
 	addi	a0, fp, -348
 	lw	a0, 0(a0)
-	beqz	a0, L168DEV
+	beqz	a0, L172DEV
 	addi	a0, fp, -348
 	lw	a0, 0(a0)
-	j	L165DEV
-L168DEV:
+	j	L169DEV
+L172DEV:
 	lw	a0, 16(fp)
 	sw	a0, -4(fp)
 	li	a0, 1
@@ -3259,7 +3313,7 @@ L168DEV:
 	exch	a0, a1
 	shra	a0, a0, a1
 	sw	a0, -52(fp)
-L169DEV:
+L173DEV:
 	lw	a0, -4(fp)
 	push	a0, sp
 	addi	a0, fp, -20
@@ -3275,7 +3329,7 @@ L169DEV:
 	call	Cfat12_check_fname
 	pop	ra, sp
 	addi	sp, sp, 4
-	beqz	a0, L172DEV
+	beqz	a0, L176DEV
 	lw	a0, -36(fp)
 	push	a0, sp
 	push	ra, sp
@@ -3283,8 +3337,8 @@ L169DEV:
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, -48
-	j	L165DEV
-L172DEV:
+	j	L169DEV
+L176DEV:
 	addi	a0, fp, -32
 	push	a0, sp
 	addi	a0, fp, -20
@@ -3294,7 +3348,7 @@ L172DEV:
 	pop	ra, sp
 	addi	sp, sp, 8
 	lw	a0, -48(fp)
-	beqz	a0, L173DEV
+	beqz	a0, L177DEV
 	li	a0, 0
 	sw	a0, -48(fp)
 	addi	a0, fp, -348
@@ -3315,7 +3369,7 @@ L172DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -348
 	lw	a0, 0(a0)
-	beqz	a0, L174DEV
+	beqz	a0, L178DEV
 	lw	a0, -36(fp)
 	push	a0, sp
 	push	ra, sp
@@ -3324,8 +3378,8 @@ L172DEV:
 	addi	sp, sp, 4
 	addi	a0, fp, -348
 	lw	a0, 0(a0)
-	j	L165DEV
-L174DEV:
+	j	L169DEV
+L178DEV:
 	addi	a0, fp, -20
 	push	a0, sp
 	addi	a0, fp, -132
@@ -3341,13 +3395,13 @@ L174DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 0
+	li	a0, 1
 	pop	a1, sp
 	and	a0, a0, a1
-	beqz	a0, L175DEV
+	beqz	a0, L179DEV
 	lw	a0, -4(fp)
-L175DEV:
-	beqz	a0, L176DEV
+L179DEV:
+	beqz	a0, L180DEV
 	lw	a0, -36(fp)
 	push	a0, sp
 	push	ra, sp
@@ -3355,35 +3409,10 @@ L175DEV:
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, -49
-	j	L165DEV
-L176DEV:
-	j	L177DEV
-L173DEV:
-	#bank data
-L178DEV:
-	#d8	"F"
-	#d8	"i"
-	#d8	"n"
-	#d8	"d"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	10
-	#d8	0
-	#bank text
-	addi	a0, fp, -132
-	push	a0, sp
-	la	a0, L178DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 12
+	j	L169DEV
+L180DEV:
+	j	L181DEV
+L177DEV:
 	addi	a0, fp, -348
 	push	a0, sp
 	addi	a0, fp, -32
@@ -3404,7 +3433,7 @@ L178DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -348
 	lw	a0, 0(a0)
-	beqz	a0, L179DEV
+	beqz	a0, L182DEV
 	lw	a0, -36(fp)
 	push	a0, sp
 	push	ra, sp
@@ -3413,8 +3442,8 @@ L178DEV:
 	addi	sp, sp, 4
 	addi	a0, fp, -348
 	lw	a0, 0(a0)
-	j	L165DEV
-L179DEV:
+	j	L169DEV
+L182DEV:
 	li	a0, 80
 	push	a0, sp
 	addi	a0, fp, -212
@@ -3440,13 +3469,13 @@ L179DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 0
+	li	a0, 1
 	pop	a1, sp
 	and	a0, a0, a1
-	beqz	a0, L180DEV
+	beqz	a0, L183DEV
 	lw	a0, -4(fp)
-L180DEV:
-	beqz	a0, L181DEV
+L183DEV:
+	beqz	a0, L184DEV
 	lw	a0, -36(fp)
 	push	a0, sp
 	push	ra, sp
@@ -3454,13 +3483,13 @@ L180DEV:
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, -49
-	j	L165DEV
+	j	L169DEV
+L184DEV:
 L181DEV:
-L177DEV:
-L171DEV:
+L175DEV:
 	lw	a0, -4(fp)
-	bnez	a0, L169DEV
-L170DEV:
+	bnez	a0, L173DEV
+L174DEV:
 	li	a0, 80
 	push	a0, sp
 	addi	a0, fp, -132
@@ -3478,8 +3507,8 @@ L170DEV:
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, 0
-	j	L165DEV
-L165DEV:
+	j	L169DEV
+L169DEV:
 	addi	sp, sp, 348
 	pop	fp, sp
 	ret
@@ -3642,14 +3671,14 @@ Cfat12_tofattime:	push	fp, sp
 	lw	a0, 0(a0)
 	pop	a1, sp
 	sb	a0, 0(a1)
-L182DEV:
+L185DEV:
 	pop	fp, sp
 	ret
 	#align 32
 Cfat12_next_cluster:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -108
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -3676,9 +3705,9 @@ Cfat12_next_cluster:	push	fp, sp
 	sw	a0, -8(fp)
 	addi	a0, fp, -96
 	lw	a0, 0(a0)
-	beqz	a0, L184DEV
+	beqz	a0, L187DEV
 	j	TLlfat12_next_cluster_cleanup
-L184DEV:
+L187DEV:
 	lw	a0, 12(fp)
 	push	a0, sp
 	li	a0, 1
@@ -3731,7 +3760,7 @@ L184DEV:
 	push	a0, sp
 	lw	a0, -104(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -3743,9 +3772,9 @@ L184DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L185DEV
+	beqz	a0, L188DEV
 	j	TLlfat12_next_cluster_cleanup
-L185DEV:
+L188DEV:
 	lw	a0, -108(fp)
 	push	a0, sp
 	lw	a0, -8(fp)
@@ -3778,21 +3807,21 @@ L185DEV:
 	lw	a0, 12(fp)
 	pop	a1, sp
 	and	a0, a0, a1
-	beqz	a0, L186DEV
+	beqz	a0, L189DEV
 	lw	a0, -4(fp)
 	push	a0, sp
 	li	a0, 4
 	pop	a1, sp
 	exch	a0, a1
 	shra	a0, a0, a1
-	j	L187DEV
-L186DEV:
+	j	L190DEV
+L189DEV:
 	li	a0, 4095
 	push	a0, sp
 	lw	a0, -4(fp)
 	pop	a1, sp
 	and	a0, a0, a1
-L187DEV:
+L190DEV:
 	sw	a0, -4(fp)
 	addi	a0, fp, -96
 	push	a0, sp
@@ -3808,8 +3837,8 @@ TLlfat12_next_cluster_cleanup:
 	addi	sp, sp, 4
 	addi	a0, fp, -96
 	lw	a0, 0(a0)
-	j	L183DEV
-L183DEV:
+	j	L186DEV
+L186DEV:
 	addi	sp, sp, 108
 	pop	fp, sp
 	ret
@@ -3818,7 +3847,7 @@ L183DEV:
 Cfat12_mark_fat_entry:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -104
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -3845,9 +3874,9 @@ Cfat12_mark_fat_entry:	push	fp, sp
 	sw	a0, -4(fp)
 	addi	a0, fp, -92
 	lw	a0, 0(a0)
-	beqz	a0, L189DEV
+	beqz	a0, L192DEV
 	j	TLlfat12_mark_fat_entry_cleanup
-L189DEV:
+L192DEV:
 	lw	a0, 12(fp)
 	push	a0, sp
 	li	a0, 1
@@ -3900,7 +3929,7 @@ L189DEV:
 	push	a0, sp
 	lw	a0, -100(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -3912,15 +3941,15 @@ L189DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L190DEV
+	beqz	a0, L193DEV
 	j	TLlfat12_mark_fat_entry_cleanup
-L190DEV:
+L193DEV:
 	li	a0, 1
 	push	a0, sp
 	lw	a0, 12(fp)
 	pop	a1, sp
 	and	a0, a0, a1
-	beqz	a0, L191DEV
+	beqz	a0, L194DEV
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, -104(fp)
@@ -4001,8 +4030,8 @@ L190DEV:
 	and	a0, a0, a1
 	pop	a1, sp
 	sb	a0, 0(a1)
-	j	L192DEV
-L191DEV:
+	j	L195DEV
+L194DEV:
 	lw	a0, -104(fp)
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -4086,14 +4115,14 @@ L191DEV:
 	or	a0, a0, a1
 	pop	a1, sp
 	sb	a0, 0(a1)
-L192DEV:
+L195DEV:
 	lw	a0, -4(fp)
 	push	a0, sp
 	li	a0, 2
 	push	a0, sp
 	lw	a0, -100(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -4117,8 +4146,8 @@ TLlfat12_mark_fat_entry_cleanup:
 	addi	sp, sp, 4
 	addi	a0, fp, -92
 	lw	a0, 0(a0)
-	j	L188DEV
-L188DEV:
+	j	L191DEV
+L191DEV:
 	addi	sp, sp, 104
 	pop	fp, sp
 	ret
@@ -4130,12 +4159,12 @@ Cfat12_update_entry:	push	fp, sp
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
-	beq	a1, a0, L195DEV
-	j	L194DEV
-L195DEV:
+	beq	a1, a0, L198DEV
+	j	L197DEV
+L198DEV:
 	li	a0, -44
-	j	L193DEV
-L194DEV:
+	j	L196DEV
+L197DEV:
 	li	a0, 76
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -4145,12 +4174,12 @@ L194DEV:
 	push	a0, sp
 	li	a0, 26
 	pop	a1, sp
-	bge	a1, a0, L197DEV
-	j	L196DEV
-L197DEV:
+	bge	a1, a0, L200DEV
+	j	L199DEV
+L200DEV:
 	li	a0, -42
-	j	L193DEV
-L196DEV:
+	j	L196DEV
+L199DEV:
 	la	a0, Cfilesystems
 	push	a0, sp
 	li	a0, 76
@@ -4166,12 +4195,12 @@ L196DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	beq	a1, a0, L199DEV
-	j	L198DEV
-L199DEV:
+	beq	a1, a0, L202DEV
+	j	L201DEV
+L202DEV:
 	li	a0, -41
-	j	L193DEV
-L198DEV:
+	j	L196DEV
+L201DEV:
 	la	a0, Cfilesystems
 	push	a0, sp
 	li	a0, 76
@@ -4196,7 +4225,7 @@ L198DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -520(fp)
 	pop	a1, sp
@@ -4210,11 +4239,11 @@ L198DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -604
 	lw	a0, 0(a0)
-	beqz	a0, L200DEV
+	beqz	a0, L203DEV
 	addi	a0, fp, -604
 	lw	a0, 0(a0)
-	j	L193DEV
-L200DEV:
+	j	L196DEV
+L203DEV:
 	addi	a0, fp, -644
 	push	a0, sp
 	push	ra, sp
@@ -4240,6 +4269,19 @@ L200DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -516(fp)
+	li	a0, 1
+	push	a0, sp
+	lw	a0, 12(fp)
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L204DEV
+	lw	a0, -516(fp)
+	push	a0, sp
+	li	a0, 229
+	pop	a1, sp
+	sb	a0, 0(a1)
+	j	TLlfat12_update_entry_store
+L204DEV:
 	li	a0, 31
 	push	a0, sp
 	lw	a0, -516(fp)
@@ -4418,119 +4460,7 @@ L200DEV:
 	and	a0, a0, a1
 	pop	a1, sp
 	sb	a0, 0(a1)
-	#bank data
-L201DEV:
-	#d8	"U"
-	#d8	"p"
-	#d8	"d"
-	#d8	"a"
-	#d8	"t"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	"e"
-	#d8	"n"
-	#d8	"t"
-	#d8	"r"
-	#d8	"y"
-	#d8	32
-	#d8	"f"
-	#d8	"o"
-	#d8	"r"
-	#d8	32
-	#d8	"f"
-	#d8	"i"
-	#d8	"l"
-	#d8	"e"
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	58
-	#d8	32
-	#d8	"l"
-	#d8	"e"
-	#d8	"n"
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"i"
-	#d8	"n"
-	#d8	32
-	#d8	"b"
-	#d8	"l"
-	#d8	"o"
-	#d8	"c"
-	#d8	"k"
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	44
-	#d8	32
-	#d8	"o"
-	#d8	"f"
-	#d8	"f"
-	#d8	"s"
-	#d8	"e"
-	#d8	"t"
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	46
-	#d8	32
-	#d8	"D"
-	#d8	"a"
-	#d8	"t"
-	#d8	"e"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"p"
-	#d8	10
-	#d8	0
-	#d8	0
-	#d8	0
-	#bank text
-	addi	a0, fp, -616
-	push	a0, sp
-	li	a0, 4
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 52
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 48
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 36
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	lw	a0, 8(fp)
-	push	a0, sp
-	la	a0, L201DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 28
+TLlfat12_update_entry_store:
 	addi	a0, fp, -604
 	push	a0, sp
 	addi	a0, fp, -512
@@ -4542,7 +4472,7 @@ L201DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -520(fp)
 	pop	a1, sp
@@ -4556,56 +4486,14 @@ L201DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -604
 	lw	a0, 0(a0)
-	beqz	a0, L202DEV
-	#bank data
-L203DEV:
-	#d8	"E"
-	#d8	"r"
-	#d8	"r"
-	#d8	"o"
-	#d8	"r"
-	#d8	32
-	#d8	"u"
-	#d8	"p"
-	#d8	"d"
-	#d8	"a"
-	#d8	"t"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	"e"
-	#d8	"n"
-	#d8	"t"
-	#d8	"r"
-	#d8	"y"
-	#d8	33
-	#d8	32
-	#d8	91
-	#d8	37
-	#d8	"d"
-	#d8	93
-	#d8	10
-	#d8	0
-	#bank text
+	beqz	a0, L205DEV
 	addi	a0, fp, -604
 	lw	a0, 0(a0)
-	push	a0, sp
-	la	a0, L203DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 12
-	addi	a0, fp, -604
-	lw	a0, 0(a0)
-	j	L193DEV
-L202DEV:
+	j	L196DEV
+L205DEV:
 	li	a0, 0
-	j	L193DEV
-L193DEV:
+	j	L196DEV
+L196DEV:
 	addi	sp, sp, 644
 	pop	fp, sp
 	ret
@@ -4626,20 +4514,20 @@ Cfat12_next_or_alloc_cluster:	push	fp, sp
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	blt	a1, a0, L206DEV
-	j	L205DEV
-L206DEV:
-	lw	a0, -4(fp)
-	j	L204DEV
+	blt	a1, a0, L208DEV
 	j	L207DEV
-L205DEV:
+L208DEV:
+	lw	a0, -4(fp)
+	j	L206DEV
+	j	L209DEV
+L207DEV:
 	lw	a0, -4(fp)
 	push	a0, sp
 	li	a0, 4088
 	pop	a1, sp
-	bge	a1, a0, L209DEV
-	j	L208DEV
-L209DEV:
+	bge	a1, a0, L211DEV
+	j	L210DEV
+L211DEV:
 	li	a0, 1
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -4649,85 +4537,28 @@ L209DEV:
 	pop	ra, sp
 	addi	sp, sp, 8
 	sw	a0, -8(fp)
-	#bank data
-L210DEV:
-	#d8	"F"
-	#d8	"r"
-	#d8	"e"
-	#d8	"e"
-	#d8	32
-	#d8	"c"
-	#d8	"l"
-	#d8	"u"
-	#d8	"s"
-	#d8	"t"
-	#d8	"e"
-	#d8	"r"
-	#d8	32
-	#d8	91
-	#d8	37
-	#d8	"x"
-	#d8	93
-	#d8	9
-	#d8	0
-	#d8	0
-	#bank text
-	lw	a0, -8(fp)
-	push	a0, sp
-	la	a0, L210DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 12
-	li	a0, 1909
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
 	li	a0, 0
 	push	a0, sp
 	lw	a0, -8(fp)
 	pop	a1, sp
-	beq	a1, a0, L212DEV
-	j	L211DEV
-L212DEV:
-	li	a0, 1908
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	li	a0, -52
-	j	L204DEV
-	j	L213DEV
-L211DEV:
-	lw	a0, -8(fp)
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	blt	a1, a0, L215DEV
-	j	L214DEV
-L215DEV:
-	li	a0, 1907
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -8(fp)
-	j	L204DEV
-L214DEV:
+	beq	a1, a0, L213DEV
+	j	L212DEV
 L213DEV:
-	li	a0, 1906
+	li	a0, -52
+	j	L206DEV
+	j	L214DEV
+L212DEV:
+	lw	a0, -8(fp)
 	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
+	li	a0, 0
+	pop	a1, sp
+	blt	a1, a0, L216DEV
+	j	L215DEV
+L216DEV:
+	lw	a0, -8(fp)
+	j	L206DEV
+L215DEV:
+L214DEV:
 	lw	a0, -8(fp)
 	push	a0, sp
 	lw	a0, 12(fp)
@@ -4739,66 +4570,20 @@ L213DEV:
 	pop	ra, sp
 	addi	sp, sp, 12
 	sw	a0, -12(fp)
-	beqz	a0, L216DEV
+	beqz	a0, L217DEV
 	lw	a0, -12(fp)
-	j	L204DEV
-L216DEV:
-	li	a0, 1910
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -8(fp)
-	j	L204DEV
-L208DEV:
-L207DEV:
-	#bank data
+	j	L206DEV
 L217DEV:
-	#d8	"N"
-	#d8	"e"
-	#d8	"x"
-	#d8	"t"
-	#d8	32
-	#d8	"c"
-	#d8	"l"
-	#d8	"u"
-	#d8	"s"
-	#d8	"t"
-	#d8	"e"
-	#d8	"r"
-	#d8	32
-	#d8	91
-	#d8	37
-	#d8	"x"
-	#d8	93
-	#d8	9
-	#d8	0
-	#d8	0
-	#bank text
+	lw	a0, -8(fp)
+	j	L206DEV
+L210DEV:
+L209DEV:
 	lw	a0, -4(fp)
-	push	a0, sp
-	la	a0, L217DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 12
-	li	a0, 1911
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -4(fp)
-	j	L204DEV
-L204DEV:
+	j	L206DEV
+L206DEV:
 	addi	sp, sp, 12
 	pop	fp, sp
 	ret
-	;#globl	Cfat12_create_entry
 	#align 32
 Cfat12_create_entry:	push	fp, sp
 	mv	fp, sp
@@ -4955,11 +4740,10 @@ L221DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 1
+	li	a0, 2
 	pop	a1, sp
-	beq	a1, a0, L226DEV
-	j	L225DEV
-L226DEV:
+	and	a0, a0, a1
+	beqz	a0, L225DEV
 	addi	a0, fp, -664
 	push	a0, sp
 	addi	a0, fp, -620
@@ -4977,90 +4761,12 @@ L226DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	blt	a1, a0, L228DEV
-	j	L227DEV
-L228DEV:
+	blt	a1, a0, L227DEV
+	j	L226DEV
+L227DEV:
 	lw	a0, -656(fp)
 	j	L218DEV
-L227DEV:
-	#bank data
-L229DEV:
-	#d8	"C"
-	#d8	"r"
-	#d8	"e"
-	#d8	"a"
-	#d8	"t"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	"f"
-	#d8	"i"
-	#d8	"l"
-	#d8	"e"
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	44
-	#d8	32
-	#d8	"D"
-	#d8	"A"
-	#d8	"T"
-	#d8	"E"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	32
-	#d8	"T"
-	#d8	"I"
-	#d8	"M"
-	#d8	"E"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	32
-	#d8	"M"
-	#d8	"S"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	10
-	#d8	0
-	#bank text
-	li	a0, 16
-	push	a0, sp
-	lw	a0, 12(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lbu	a0, 0(a0);notaligned
-	push	a0, sp
-	li	a0, 20
-	push	a0, sp
-	lw	a0, 12(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 24
-	push	a0, sp
-	lw	a0, 12(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	lw	a0, 12(fp)
-	push	a0, sp
-	la	a0, L229DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 24
+L226DEV:
 	addi	a0, fp, -652
 	push	a0, sp
 	lw	a0, 12(fp)
@@ -5087,7 +4793,7 @@ L229DEV:
 	push	a0, sp
 	lw	a0, -664(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5099,12 +4805,12 @@ L229DEV:
 	addi	sp, sp, 12
 	li	a0, 0
 	j	L218DEV
-	j	L230DEV
+	j	L228DEV
 L225DEV:
 	li	a0, -49
 	j	L218DEV
-L230DEV:
-	j	L231DEV
+L228DEV:
+	j	L229DEV
 L224DEV:
 	addi	a0, fp, -664
 	push	a0, sp
@@ -5121,12 +4827,12 @@ L224DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	blt	a1, a0, L233DEV
-	j	L232DEV
-L233DEV:
+	blt	a1, a0, L231DEV
+	j	L230DEV
+L231DEV:
 	lw	a0, -656(fp)
 	j	L218DEV
-L232DEV:
+L230DEV:
 	addi	a0, fp, -652
 	push	a0, sp
 	lw	a0, 12(fp)
@@ -5153,7 +4859,7 @@ L232DEV:
 	push	a0, sp
 	lw	a0, -664(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5165,17 +4871,16 @@ L232DEV:
 	addi	sp, sp, 12
 	li	a0, 0
 	j	L218DEV
-L231DEV:
+L229DEV:
 L218DEV:
 	addi	sp, sp, 784
 	pop	fp, sp
 	ret
-	;#globl	Cfat12_get_cluster
 	#align 32
 Cfat12_get_cluster:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -112
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5202,12 +4907,12 @@ Cfat12_get_cluster:	push	fp, sp
 	sw	a0, -24(fp)
 	addi	a0, fp, -112
 	lw	a0, 0(a0)
-	beqz	a0, L235DEV
+	beqz	a0, L233DEV
 	j	TLlfat12_get_cluster_cleanup
-L235DEV:
+L233DEV:
 	li	a0, 0
 	sw	a0, -4(fp)
-L236DEV:
+L234DEV:
 	lw	a0, -4(fp)
 	push	a0, sp
 	li	a0, 28
@@ -5217,17 +4922,17 @@ L236DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	pop	a1, sp
-	blt	a1, a0, L240DEV
-	j	L238DEV
-L240DEV:
-	j	L237DEV
-L239DEV:
+	blt	a1, a0, L238DEV
+	j	L236DEV
+L238DEV:
+	j	L235DEV
+L237DEV:
 	lw	a0, -4(fp)
 	lw	t0, -4(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -4(fp)
-	j	L236DEV
-L237DEV:
+	j	L234DEV
+L235DEV:
 	addi	a0, fp, -112
 	push	a0, sp
 	lw	a0, -24(fp)
@@ -5245,7 +4950,7 @@ L237DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5257,12 +4962,12 @@ L237DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L241DEV
+	beqz	a0, L239DEV
 	j	TLlfat12_get_cluster_cleanup
-L241DEV:
+L239DEV:
 	li	a0, 0
 	sw	a0, -8(fp)
-L242DEV:
+L240DEV:
 	lw	a0, -8(fp)
 	push	a0, sp
 	li	a0, 4
@@ -5276,19 +4981,19 @@ L242DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	pop	a1, sp
-	blt	a1, a0, L246DEV
-	j	L244DEV
-L246DEV:
-	j	L243DEV
-L245DEV:
+	blt	a1, a0, L244DEV
+	j	L242DEV
+L244DEV:
+	j	L241DEV
+L243DEV:
 	li	a0, 3
 	push	a0, sp
 	lw	a0, -8(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -8(fp)
-	j	L242DEV
-L243DEV:
+	j	L240DEV
+L241DEV:
 	li	a0, 1
 	push	a0, sp
 	lw	a0, -8(fp)
@@ -5364,11 +5069,11 @@ L243DEV:
 	push	a0, sp
 	lw	a0, -20(fp)
 	pop	a1, sp
-	beq	a1, a0, L248DEV
-	j	L247DEV
-L248DEV:
+	beq	a1, a0, L246DEV
+	j	L245DEV
+L246DEV:
 	lw	a0, 12(fp)
-	beqz	a0, L249DEV
+	beqz	a0, L247DEV
 	lw	a0, -8(fp)
 	push	a0, sp
 	li	a0, 1
@@ -5419,7 +5124,7 @@ L248DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5429,7 +5134,7 @@ L248DEV:
 	call	Cdisk_store_sectors
 	pop	ra, sp
 	addi	sp, sp, 16
-L249DEV:
+L247DEV:
 	addi	a0, fp, -112
 	push	a0, sp
 	li	a0, 4
@@ -5458,16 +5163,16 @@ L249DEV:
 	pop	a1, sp
 	sw	a0, 0(a1)
 	j	TLlfat12_get_cluster_cleanup
-L247DEV:
+L245DEV:
 	li	a0, 0
 	push	a0, sp
 	lw	a0, -16(fp)
 	pop	a1, sp
-	beq	a1, a0, L251DEV
-	j	L250DEV
-L251DEV:
+	beq	a1, a0, L249DEV
+	j	L248DEV
+L249DEV:
 	lw	a0, 12(fp)
-	beqz	a0, L252DEV
+	beqz	a0, L250DEV
 	lw	a0, -8(fp)
 	push	a0, sp
 	li	a0, 1
@@ -5522,7 +5227,7 @@ L251DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5532,7 +5237,7 @@ L251DEV:
 	call	Cdisk_store_sectors
 	pop	ra, sp
 	addi	sp, sp, 16
-L252DEV:
+L250DEV:
 	addi	a0, fp, -112
 	push	a0, sp
 	li	a0, 4
@@ -5565,11 +5270,11 @@ L252DEV:
 	pop	a1, sp
 	sw	a0, 0(a1)
 	j	TLlfat12_get_cluster_cleanup
-L250DEV:
-	j	L245DEV
-L244DEV:
-	j	L239DEV
-L238DEV:
+L248DEV:
+	j	L243DEV
+L242DEV:
+	j	L237DEV
+L236DEV:
 	addi	a0, fp, -112
 	push	a0, sp
 	li	a0, 0
@@ -5584,8 +5289,8 @@ TLlfat12_get_cluster_cleanup:
 	addi	sp, sp, 4
 	addi	a0, fp, -112
 	lw	a0, 0(a0)
-	j	L234DEV
-L234DEV:
+	j	L232DEV
+L232DEV:
 	addi	sp, sp, 112
 	pop	fp, sp
 	ret
@@ -5607,13 +5312,13 @@ Cfat12_mount:	push	fp, sp
 	push	a0, sp
 	lw	a0, -168(fp)
 	pop	a1, sp
-	beq	a1, a0, L255DEV
-	j	L254DEV
-L255DEV:
+	beq	a1, a0, L253DEV
+	j	L252DEV
+L253DEV:
 	addi	a0, fp, -84
 	lw	a0, 0(a0)
-	j	L253DEV
-L254DEV:
+	j	L251DEV
+L252DEV:
 	addi	a0, fp, -84
 	push	a0, sp
 	addi	a0, fp, -164
@@ -5626,11 +5331,11 @@ L254DEV:
 	addi	sp, sp, 8
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L256DEV
+	beqz	a0, L254DEV
 	addi	a0, fp, -84
 	lw	a0, 0(a0)
-	j	L253DEV
-L256DEV:
+	j	L251DEV
+L254DEV:
 	lw	a0, -168(fp)
 	push	a0, sp
 	addi	a0, fp, -164
@@ -5639,7 +5344,7 @@ L256DEV:
 	call	Cfat12_get_mount_info
 	pop	ra, sp
 	addi	sp, sp, 8
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5648,7 +5353,7 @@ L256DEV:
 	lw	a0, -168(fp)
 	pop	a1, sp
 	sw	a0, 0(a1)
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5666,7 +5371,7 @@ L256DEV:
 	lw	a0, 0(a0)
 	pop	a1, sp
 	sw	a0, 0(a1)
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5676,7 +5381,7 @@ L256DEV:
 	lw	a0, 0(a0)
 	pop	a1, sp
 	sw	a0, 0(a1)
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5694,7 +5399,7 @@ L256DEV:
 	lw	a0, 0(a0)
 	pop	a1, sp
 	sw	a0, 0(a1)
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
@@ -5713,8 +5418,8 @@ L256DEV:
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, 0
-	j	L253DEV
-L253DEV:
+	j	L251DEV
+L251DEV:
 	addi	sp, sp, 168
 	pop	fp, sp
 	ret
@@ -5723,7 +5428,7 @@ L253DEV:
 Cfat12_init:	push	fp, sp
 	mv	fp, sp
 	#bank data
-L258DEV:
+L256DEV:
 	#d8	"F"
 	#d8	"A"
 	#d8	"T"
@@ -5733,7 +5438,7 @@ L258DEV:
 	#d8	0
 	#d8	0
 	#bank text
-	la	a0, L258DEV
+	la	a0, L256DEV
 	push	a0, sp
 	lw	a0, 8(fp)
 	push	a0, sp
@@ -5756,7 +5461,7 @@ L258DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	la	a0, Cfat12_read
+	la	a0, Cfat12_create_file
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, 16
@@ -5765,7 +5470,7 @@ L258DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 0
+	la	a0, Cfat12_delete_file
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, 20
@@ -5774,7 +5479,7 @@ L258DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	la	a0, Cfat12_close
+	la	a0, Cfat12_create_dir
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, 24
@@ -5783,16 +5488,7 @@ L258DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	la	a0, Cfat12_open
-	pop	a1, sp
-	sw	a0, 0(a1)
-	li	a0, 28
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	la	a0, Cfat12_seek
+	la	a0, Cfat12_delete_dir
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, 32
@@ -5801,10 +5497,55 @@ L258DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
+	la	a0, Cfat12_read
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 36
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	la	a0, Cfat12_write
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 40
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	la	a0, Cfat12_close
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 44
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	la	a0, Cfat12_open
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 48
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	la	a0, Cfat12_seek
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 52
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
 	sw	a0, 0(a1)
-L257DEV:
+L255DEV:
 	pop	fp, sp
 	ret
 	;#globl	Cfat12_read
@@ -5819,11 +5560,10 @@ Cfat12_read:	push	fp, sp
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 0
+	li	a0, 1
 	pop	a1, sp
-	sub	a0, a1, a0
-	seqz	a0, a0
-	beqz	a0, L260DEV
+	and	a0, a0, a1
+	beqz	a0, L258DEV
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -5840,8 +5580,8 @@ Cfat12_read:	push	fp, sp
 	pop	a1, sp
 	slt	a0, a1, a0
 	seqz	a0, a0
-L260DEV:
-	beqz	a0, L261DEV
+L258DEV:
+	beqz	a0, L259DEV
 	li	a0, 44
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -5852,18 +5592,18 @@ L260DEV:
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, -1
-	j	L259DEV
-L261DEV:
+	j	L257DEV
+L259DEV:
 	li	a0, 0
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
-	beq	a1, a0, L263DEV
-	j	L262DEV
-L263DEV:
+	beq	a1, a0, L261DEV
+	j	L260DEV
+L261DEV:
 	li	a0, -44
-	j	L259DEV
-L262DEV:
+	j	L257DEV
+L260DEV:
 	li	a0, 76
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -5873,12 +5613,12 @@ L262DEV:
 	push	a0, sp
 	li	a0, 26
 	pop	a1, sp
-	bge	a1, a0, L265DEV
-	j	L264DEV
-L265DEV:
+	bge	a1, a0, L263DEV
+	j	L262DEV
+L263DEV:
 	li	a0, -42
-	j	L259DEV
-L264DEV:
+	j	L257DEV
+L262DEV:
 	la	a0, Cfilesystems
 	push	a0, sp
 	li	a0, 76
@@ -5894,11 +5634,25 @@ L264DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	beq	a1, a0, L267DEV
-	j	L266DEV
-L267DEV:
+	beq	a1, a0, L265DEV
+	j	L264DEV
+L265DEV:
 	li	a0, -41
-	j	L259DEV
+	j	L257DEV
+L264DEV:
+	li	a0, 32
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 262144
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L266DEV
+	li	a0, -53
+	j	L257DEV
 L266DEV:
 	lw	a0, 16(fp)
 	sw	a0, -12(fp)
@@ -5915,7 +5669,7 @@ L266DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	sw	a0, -72(fp)
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, -72(fp)
 	pop	a1, sp
@@ -6043,20 +5797,20 @@ L266DEV:
 	sw	a0, -64(fp)
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	beqz	a0, L268DEV
+	beqz	a0, L267DEV
 	li	a0, 32
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	li	a0, 2
+	li	a0, 0
 	pop	a1, sp
 	sw	a0, 0(a1)
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	j	L259DEV
-L268DEV:
+	j	L257DEV
+L267DEV:
 	addi	a0, fp, -160
 	push	a0, sp
 	lw	a0, -64(fp)
@@ -6070,7 +5824,7 @@ L268DEV:
 	push	a0, sp
 	lw	a0, -24(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -72(fp)
 	pop	a1, sp
@@ -6082,7 +5836,7 @@ L268DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L269DEV
+	beqz	a0, L268DEV
 	lw	a0, -64(fp)
 	push	a0, sp
 	push	ra, sp
@@ -6091,8 +5845,8 @@ L268DEV:
 	addi	sp, sp, 4
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	j	L259DEV
-L269DEV:
+	j	L257DEV
+L268DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -52(fp)
@@ -6101,11 +5855,11 @@ L269DEV:
 	push	a0, sp
 	lw	a0, -44(fp)
 	pop	a1, sp
-	blt	a1, a0, L271DEV
-	j	L270DEV
-L271DEV:
+	blt	a1, a0, L270DEV
+	j	L269DEV
+L270DEV:
 	llw	a0, Cfat12_dont_read
-	bnez	a0, L272DEV
+	bnez	a0, L271DEV
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -52(fp)
@@ -6120,7 +5874,7 @@ L271DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
-L272DEV:
+L271DEV:
 	li	a0, 44
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6155,11 +5909,11 @@ L272DEV:
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, 0
-	j	L259DEV
-	j	L273DEV
-L270DEV:
+	j	L257DEV
+	j	L272DEV
+L269DEV:
 	llw	a0, Cfat12_dont_read
-	bnez	a0, L274DEV
+	bnez	a0, L273DEV
 	lw	a0, -44(fp)
 	push	a0, sp
 	lw	a0, -52(fp)
@@ -6179,7 +5933,7 @@ L270DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
-L274DEV:
+L273DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -44(fp)
@@ -6224,7 +5978,7 @@ L274DEV:
 	add	a0, a1, a0
 	pop	a1, sp
 	sw	a0, 0(a1)
-L273DEV:
+L272DEV:
 	addi	a0, fp, -160
 	push	a0, sp
 	li	a0, 4
@@ -6245,7 +5999,7 @@ L273DEV:
 	sw	a0, -68(fp)
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	beqz	a0, L275DEV
+	beqz	a0, L274DEV
 	lw	a0, -64(fp)
 	push	a0, sp
 	push	ra, sp
@@ -6254,26 +6008,26 @@ L273DEV:
 	addi	sp, sp, 4
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	j	L259DEV
-L275DEV:
+	j	L257DEV
+L274DEV:
 	li	a0, 0
 	sw	a0, -4(fp)
-L276DEV:
+L275DEV:
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, -60(fp)
 	pop	a1, sp
-	blt	a1, a0, L280DEV
-	j	L278DEV
-L280DEV:
+	blt	a1, a0, L279DEV
 	j	L277DEV
 L279DEV:
+	j	L276DEV
+L278DEV:
 	lw	a0, -4(fp)
 	lw	t0, -4(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -4(fp)
-	j	L276DEV
-L277DEV:
+	j	L275DEV
+L276DEV:
 	li	a0, 64
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6336,7 +6090,7 @@ L277DEV:
 	push	a0, sp
 	lw	a0, -32(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -72(fp)
 	pop	a1, sp
@@ -6348,7 +6102,7 @@ L277DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L281DEV
+	beqz	a0, L280DEV
 	lw	a0, -64(fp)
 	push	a0, sp
 	push	ra, sp
@@ -6363,8 +6117,8 @@ L277DEV:
 	addi	sp, sp, 4
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	j	L259DEV
-L281DEV:
+	j	L257DEV
+L280DEV:
 	lw	a0, -36(fp)
 	push	a0, sp
 	lw	a0, -68(fp)
@@ -6400,29 +6154,29 @@ L281DEV:
 	li	a0, 1
 	pop	a1, sp
 	and	a0, a0, a1
-	beqz	a0, L282DEV
+	beqz	a0, L281DEV
 	lw	a0, -40(fp)
 	push	a0, sp
 	li	a0, 4
 	pop	a1, sp
 	exch	a0, a1
 	shra	a0, a0, a1
-	j	L283DEV
-L282DEV:
+	j	L282DEV
+L281DEV:
 	li	a0, 4095
 	push	a0, sp
 	lw	a0, -40(fp)
 	pop	a1, sp
 	and	a0, a0, a1
-L283DEV:
+L282DEV:
 	sw	a0, -40(fp)
 	lw	a0, -40(fp)
 	push	a0, sp
 	li	a0, 4088
 	pop	a1, sp
-	bge	a1, a0, L285DEV
-	j	L284DEV
-L285DEV:
+	bge	a1, a0, L284DEV
+	j	L283DEV
+L284DEV:
 	li	a0, 44
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6451,25 +6205,24 @@ L285DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	push	a0, sp
-	li	a0, 0
+	li	a0, 1
 	pop	a1, sp
-	beq	a1, a0, L288DEV
-	j	L286DEV
-L288DEV:
+	and	a0, a0, a1
+	beqz	a0, L285DEV
 	li	a0, -1
-	j	L287DEV
-L286DEV:
+	j	L286DEV
+L285DEV:
 	li	a0, 0
-L287DEV:
-	j	L259DEV
-L284DEV:
+L286DEV:
+	j	L257DEV
+L283DEV:
 	li	a0, 0
 	push	a0, sp
 	lw	a0, -40(fp)
 	pop	a1, sp
-	beq	a1, a0, L290DEV
-	j	L289DEV
-L290DEV:
+	beq	a1, a0, L288DEV
+	j	L287DEV
+L288DEV:
 	li	a0, 44
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6492,8 +6245,8 @@ L290DEV:
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, -47
-	j	L259DEV
-L289DEV:
+	j	L257DEV
+L287DEV:
 	li	a0, 64
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6546,7 +6299,7 @@ L289DEV:
 	push	a0, sp
 	lw	a0, -24(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -72(fp)
 	pop	a1, sp
@@ -6558,7 +6311,7 @@ L289DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L291DEV
+	beqz	a0, L289DEV
 	lw	a0, -64(fp)
 	push	a0, sp
 	push	ra, sp
@@ -6573,18 +6326,18 @@ L289DEV:
 	addi	sp, sp, 4
 	addi	a0, fp, -160
 	lw	a0, 0(a0)
-	j	L259DEV
-L291DEV:
+	j	L257DEV
+L289DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -44(fp)
 	pop	a1, sp
 	slt	a0, a1, a0
-	beqz	a0, L292DEV
+	beqz	a0, L290DEV
 	llw	a0, Cfat12_dont_read
 	seqz	a0, a0
-L292DEV:
-	beqz	a0, L293DEV
+L290DEV:
+	beqz	a0, L291DEV
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -64(fp)
@@ -6607,11 +6360,11 @@ L292DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
-	j	L278DEV
-	j	L294DEV
-L293DEV:
+	j	L277DEV
+	j	L292DEV
+L291DEV:
 	llw	a0, Cfat12_dont_read
-	bnez	a0, L295DEV
+	bnez	a0, L293DEV
 	lw	a0, -44(fp)
 	push	a0, sp
 	lw	a0, -64(fp)
@@ -6634,7 +6387,7 @@ L293DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
-L295DEV:
+L293DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -44(fp)
@@ -6642,9 +6395,9 @@ L295DEV:
 	exch	a0, a1
 	sub	a0, a0, a1
 	sw	a0, 16(fp)
-L294DEV:
-	j	L279DEV
-L278DEV:
+L292DEV:
+	j	L278DEV
+L277DEV:
 	li	a0, 64
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6694,8 +6447,8 @@ L278DEV:
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, 0
-	j	L259DEV
-L259DEV:
+	j	L257DEV
+L257DEV:
 	addi	sp, sp, 160
 	pop	fp, sp
 	ret
@@ -6721,16 +6474,16 @@ Cfat12_open:	push	fp, sp
 	push	a0, sp
 	lw	a0, -88(fp)
 	pop	a1, sp
-	beq	a1, a0, L298DEV
-	j	L297DEV
-L298DEV:
+	beq	a1, a0, L296DEV
+	j	L295DEV
+L296DEV:
 	addi	a0, fp, -84
 	push	a0, sp
 	li	a0, -41
 	pop	a1, sp
 	sw	a0, 0(a1)
 	j	TLlfat12_open_end
-L297DEV:
+L295DEV:
 	addi	a0, fp, -84
 	push	a0, sp
 	lw	a0, 16(fp)
@@ -6747,9 +6500,9 @@ L297DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -84
 	lw	a0, 0(a0)
-	beqz	a0, L299DEV
+	beqz	a0, L297DEV
 	j	TLlfat12_open_end
-L299DEV:
+L297DEV:
 	addi	a0, fp, -168
 	push	a0, sp
 	li	a0, 40
@@ -6775,8 +6528,8 @@ L299DEV:
 TLlfat12_open_end:
 	addi	a0, fp, -84
 	lw	a0, 0(a0)
-	j	L296DEV
-L296DEV:
+	j	L294DEV
+L294DEV:
 	addi	sp, sp, 168
 	pop	fp, sp
 	ret
@@ -6788,7 +6541,9 @@ Cfat12_close:	push	fp, sp
 	llw	t0, Cfs_currid
 	subi	t0, t0, 1
 	ssw	t0, Cfs_currid, t5
-L300DEV:
+	li	a0, 0
+	j	L298DEV
+L298DEV:
 	pop	fp, sp
 	ret
 	;#globl	Cfat12_seek
@@ -6797,8 +6552,8 @@ Cfat12_seek:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -4
 	lw	a0, 16(fp)
-	j	L303DEV
-L304DEV:
+	j	L301DEV
+L302DEV:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6823,8 +6578,25 @@ L304DEV:
 	sw	a0, -4(fp)
 	li	a0, 0
 	ssw	a0, Cfat12_dont_read, t0
-	j	L302DEV
-L305DEV:
+	j	L300DEV
+L303DEV:
+	li	a0, 1
+	ssw	a0, Cfat12_dont_read, t0
+	lw	a0, 12(fp)
+	push	a0, sp
+	li	a0, 0
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_read
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	li	a0, 0
+	ssw	a0, Cfat12_dont_read, t0
+	j	L300DEV
+L304DEV:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6840,7 +6612,7 @@ L305DEV:
 	pop	a1, sp
 	sw	a0, 0(a1)
 	li	a0, 1
-	ssw	a0, Cfat12_dont_read, t0
+	ssw	a0, Cfat12_write_zero, t0
 	lw	a0, 12(fp)
 	push	a0, sp
 	li	a0, 0
@@ -6848,31 +6620,640 @@ L305DEV:
 	lw	a0, 8(fp)
 	push	a0, sp
 	push	ra, sp
-	call	Cfat12_read
+	call	Cfat12_write
 	pop	ra, sp
 	addi	sp, sp, 12
 	sw	a0, -4(fp)
 	li	a0, 0
-	ssw	a0, Cfat12_dont_read, t0
-	j	L302DEV
-L306DEV:
-	li	a0, -2
+	ssw	a0, Cfat12_write_zero, t0
+	j	L300DEV
+L305DEV:
+	li	a0, -3
 	sw	a0, -4(fp)
-	j	L302DEV
-	j	L302DEV
-L303DEV:
-	la	a1, L307DEV
-	j	switch
-L307DEV:
-	#d32	2
-	#d32	0, L304DEV
-	#d32	1, L305DEV
-	#d32	L306DEV
-L302DEV:
-	lw	a0, -4(fp)
-	j	L301DEV
+	j	L300DEV
+	j	L300DEV
 L301DEV:
+	la	a1, L306DEV
+	j	switch
+L306DEV:
+	#d32	3
+	#d32	0, L302DEV
+	#d32	1, L303DEV
+	#d32	2, L304DEV
+	#d32	L305DEV
+L300DEV:
+	lw	a0, -4(fp)
+	j	L299DEV
+L299DEV:
 	addi	sp, sp, 4
+	pop	fp, sp
+	ret
+	;#globl	Cfat12_create_file
+	#align 32
+Cfat12_create_file:	push	fp, sp
+	mv	fp, sp
+	addi	sp, sp, -152
+	li	a0, 0
+	push	a0, sp
+	lw	a0, 12(fp)
+	pop	a1, sp
+	beq	a1, a0, L309DEV
+	j	L308DEV
+L309DEV:
+	li	a0, -40
+	j	L307DEV
+L308DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfs_fname_from_path
+	pop	ra, sp
+	addi	sp, sp, 4
+	sw	a0, -8(fp)
+	addi	a0, fp, -24
+	push	a0, sp
+	lw	a0, -8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_parse_fname
+	pop	ra, sp
+	addi	sp, sp, 8
+	li	a0, 8
+	push	a0, sp
+	addi	a0, fp, -24
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	push	ra, sp
+	call	Cstrncpy
+	pop	ra, sp
+	addi	sp, sp, 12
+	li	a0, 3
+	push	a0, sp
+	addi	a0, fp, -24
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	push	ra, sp
+	call	Cstrncpy
+	pop	ra, sp
+	addi	sp, sp, 12
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 44
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sw	a0, 0(a1)
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	sb	a0, 0(a1)
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 131072
+	push	a0, sp
+	lw	a0, 16(fp)
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L310DEV
+	li	a0, 4
+	j	L311DEV
+L310DEV:
+	li	a0, 0
+L311DEV:
+	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sb	a0, 0(a1)
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 524288
+	push	a0, sp
+	lw	a0, 16(fp)
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L312DEV
+	li	a0, 1
+	j	L313DEV
+L312DEV:
+	li	a0, 0
+L313DEV:
+	pop	a1, sp
+	or	a0, a0, a1
+	pop	a1, sp
+	sb	a0, 0(a1)
+	lw	a0, 12(fp)
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_find
+	pop	ra, sp
+	addi	sp, sp, 12
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	beq	a1, a0, L315DEV
+	j	L314DEV
+L315DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_delete_file
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	beqz	a0, L316DEV
+	lw	a0, -4(fp)
+	j	L307DEV
+L316DEV:
+L314DEV:
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 40
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 1
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_get_cluster
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -4(fp)
+	pop	a1, sp
+	beq	a1, a0, L318DEV
+	j	L317DEV
+L318DEV:
+	li	a0, -56
+	j	L307DEV
+	j	L319DEV
+L317DEV:
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	blt	a1, a0, L321DEV
+	j	L320DEV
+L321DEV:
+	lw	a0, -4(fp)
+	j	L307DEV
+L320DEV:
+L319DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_create_entry
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	j	L307DEV
+L307DEV:
+	addi	sp, sp, 152
+	pop	fp, sp
+	ret
+	;#globl	Cfat12_create_dir
+	#align 32
+Cfat12_create_dir:	push	fp, sp
+	mv	fp, sp
+	addi	sp, sp, -152
+	li	a0, 0
+	push	a0, sp
+	lw	a0, 12(fp)
+	pop	a1, sp
+	beq	a1, a0, L324DEV
+	j	L323DEV
+L324DEV:
+	li	a0, -40
+	j	L322DEV
+L323DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfs_fname_from_path
+	pop	ra, sp
+	addi	sp, sp, 4
+	sw	a0, -8(fp)
+	addi	a0, fp, -24
+	push	a0, sp
+	lw	a0, -8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_parse_fname
+	pop	ra, sp
+	addi	sp, sp, 8
+	li	a0, 8
+	push	a0, sp
+	addi	a0, fp, -24
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	push	ra, sp
+	call	Cstrncpy
+	pop	ra, sp
+	addi	sp, sp, 12
+	li	a0, 3
+	push	a0, sp
+	addi	a0, fp, -24
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	push	ra, sp
+	call	Cstrncpy
+	pop	ra, sp
+	addi	sp, sp, 12
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 44
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sw	a0, 0(a1)
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 16
+	pop	a1, sp
+	sb	a0, 0(a1)
+	lw	a0, 12(fp)
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_find
+	pop	ra, sp
+	addi	sp, sp, 12
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	beq	a1, a0, L326DEV
+	j	L325DEV
+L326DEV:
+	li	a0, -50
+	j	L322DEV
+L325DEV:
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 40
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 1
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_get_cluster
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -4(fp)
+	pop	a1, sp
+	beq	a1, a0, L328DEV
+	j	L327DEV
+L328DEV:
+	li	a0, -56
+	j	L322DEV
+	j	L329DEV
+L327DEV:
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	blt	a1, a0, L331DEV
+	j	L330DEV
+L331DEV:
+	lw	a0, -4(fp)
+	j	L322DEV
+L330DEV:
+L329DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_create_entry
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	j	L322DEV
+L322DEV:
+	addi	sp, sp, 152
+	pop	fp, sp
+	ret
+	;#globl	Cfat12_delete_file
+	#align 32
+Cfat12_delete_file:	push	fp, sp
+	mv	fp, sp
+	addi	sp, sp, -92
+	li	a0, 0
+	push	a0, sp
+	lw	a0, 12(fp)
+	pop	a1, sp
+	beq	a1, a0, L334DEV
+	j	L333DEV
+L334DEV:
+	li	a0, -40
+	j	L332DEV
+L333DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	addi	a0, fp, -92
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_find
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	beqz	a0, L335DEV
+	lw	a0, -4(fp)
+	j	L332DEV
+L335DEV:
+	addi	a0, fp, -92
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 2
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L336DEV
+	li	a0, -57
+	j	L332DEV
+L336DEV:
+	addi	a0, fp, -92
+	push	a0, sp
+	li	a0, 60
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	sw	a0, -8(fp)
+L337DEV:
+	lw	a0, -8(fp)
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_next_cluster
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -12(fp)
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	blt	a1, a0, L341DEV
+	j	L340DEV
+L341DEV:
+	lw	a0, -4(fp)
+	j	L332DEV
+L340DEV:
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -8(fp)
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_mark_fat_entry
+	pop	ra, sp
+	addi	sp, sp, 12
+	lw	a0, -12(fp)
+	sw	a0, -8(fp)
+L339DEV:
+	lw	a0, -8(fp)
+	push	a0, sp
+	li	a0, 4088
+	pop	a1, sp
+	bge	a1, a0, L342DEV
+	j	L337DEV
+L342DEV:
+L338DEV:
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -8(fp)
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_mark_fat_entry
+	pop	ra, sp
+	addi	sp, sp, 12
+	li	a0, 1
+	push	a0, sp
+	addi	a0, fp, -92
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_update_entry
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	j	L332DEV
+L332DEV:
+	addi	sp, sp, 92
+	pop	fp, sp
+	ret
+	;#globl	Cfat12_delete_dir
+	#align 32
+Cfat12_delete_dir:	push	fp, sp
+	mv	fp, sp
+	addi	sp, sp, -92
+	li	a0, 0
+	push	a0, sp
+	lw	a0, 12(fp)
+	pop	a1, sp
+	beq	a1, a0, L345DEV
+	j	L344DEV
+L345DEV:
+	li	a0, -40
+	j	L343DEV
+L344DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	addi	a0, fp, -92
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_find
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	beqz	a0, L346DEV
+	lw	a0, -4(fp)
+	j	L343DEV
+L346DEV:
+	addi	a0, fp, -92
+	push	a0, sp
+	li	a0, 32
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 1
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L347DEV
+	li	a0, -49
+	j	L343DEV
+L347DEV:
+	addi	a0, fp, -92
+	push	a0, sp
+	li	a0, 60
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	sw	a0, -8(fp)
+L348DEV:
+	lw	a0, -8(fp)
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_next_cluster
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -12(fp)
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	blt	a1, a0, L352DEV
+	j	L351DEV
+L352DEV:
+	lw	a0, -4(fp)
+	j	L343DEV
+L351DEV:
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -8(fp)
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_mark_fat_entry
+	pop	ra, sp
+	addi	sp, sp, 12
+	lw	a0, -12(fp)
+	sw	a0, -8(fp)
+L350DEV:
+	lw	a0, -8(fp)
+	push	a0, sp
+	li	a0, 4088
+	pop	a1, sp
+	bge	a1, a0, L353DEV
+	j	L348DEV
+L353DEV:
+L349DEV:
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -8(fp)
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_mark_fat_entry
+	pop	ra, sp
+	addi	sp, sp, 12
+	li	a0, 1
+	push	a0, sp
+	addi	a0, fp, -92
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_update_entry
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	j	L343DEV
+L343DEV:
+	addi	sp, sp, 92
 	pop	fp, sp
 	ret
 	;#globl	Cfat12_write
@@ -6884,12 +7265,12 @@ Cfat12_write:	push	fp, sp
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
-	beq	a1, a0, L310DEV
-	j	L309DEV
-L310DEV:
+	beq	a1, a0, L356DEV
+	j	L355DEV
+L356DEV:
 	li	a0, -44
-	j	L308DEV
-L309DEV:
+	j	L354DEV
+L355DEV:
 	li	a0, 76
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -6899,12 +7280,12 @@ L309DEV:
 	push	a0, sp
 	li	a0, 26
 	pop	a1, sp
-	bge	a1, a0, L312DEV
-	j	L311DEV
-L312DEV:
+	bge	a1, a0, L358DEV
+	j	L357DEV
+L358DEV:
 	li	a0, -42
-	j	L308DEV
-L311DEV:
+	j	L354DEV
+L357DEV:
 	la	a0, Cfilesystems
 	push	a0, sp
 	li	a0, 76
@@ -6920,12 +7301,26 @@ L311DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	beq	a1, a0, L314DEV
-	j	L313DEV
-L314DEV:
+	beq	a1, a0, L360DEV
+	j	L359DEV
+L360DEV:
 	li	a0, -41
-	j	L308DEV
-L313DEV:
+	j	L354DEV
+L359DEV:
+	li	a0, 32
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 524288
+	pop	a1, sp
+	and	a0, a0, a1
+	beqz	a0, L361DEV
+	li	a0, -53
+	j	L354DEV
+L361DEV:
 	la	a0, Cfilesystems
 	push	a0, sp
 	li	a0, 76
@@ -6939,7 +7334,7 @@ L313DEV:
 	add	a0, a1, a0
 	lw	a0, 0(a0)
 	sw	a0, -52(fp)
-	li	a0, 32
+	li	a0, 52
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7017,136 +7412,9 @@ L313DEV:
 	sw	a0, -4(fp)
 	addi	a0, fp, -136
 	lw	a0, 0(a0)
-	beqz	a0, L315DEV
+	beqz	a0, L362DEV
 	j	TLlfat12_write_cleanup
-L315DEV:
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	li	a0, 24
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 2
-	pop	a1, sp
-	sb	a0, 0(a1)
-	#bank data
-L316DEV:
-	#d8	"W"
-	#d8	"r"
-	#d8	"i"
-	#d8	"t"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	32
-	#d8	"b"
-	#d8	"y"
-	#d8	"t"
-	#d8	"e"
-	#d8	"s"
-	#d8	32
-	#d8	"t"
-	#d8	"o"
-	#d8	32
-	#d8	"f"
-	#d8	"i"
-	#d8	"l"
-	#d8	"e"
-	#d8	32
-	#d8	37
-	#d8	"s"
-	#d8	58
-	#d8	32
-	#d8	"s"
-	#d8	"e"
-	#d8	"c"
-	#d8	"t"
-	#d8	"o"
-	#d8	"r"
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	32
-	#d8	40
-	#d8	37
-	#d8	"x"
-	#d8	44
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	44
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	41
-	#d8	32
-	#d8	"c"
-	#d8	"l"
-	#d8	"u"
-	#d8	"s"
-	#d8	"t"
-	#d8	"e"
-	#d8	"r"
-	#d8	32
-	#d8	37
-	#d8	"x"
-	#d8	10
-	#d8	0
-	#bank text
-	li	a0, 64
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 8
-	push	a0, sp
-	lw	a0, -48(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 64
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	li	a0, 36
-	push	a0, sp
-	lw	a0, -48(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	push	a0, sp
-	lw	a0, -8(fp)
-	push	a0, sp
-	lw	a0, 8(fp)
-	push	a0, sp
-	lw	a0, 16(fp)
-	push	a0, sp
-	la	a0, L316DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 36
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	li	a0, 24
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 15
-	pop	a1, sp
-	sb	a0, 0(a1)
+L362DEV:
 	li	a0, 0
 	sw	a0, -12(fp)
 	li	a0, 64
@@ -7200,24 +7468,6 @@ L316DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -8(fp)
-	li	a0, 1365
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -20(fp)
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -8(fp)
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
 	addi	a0, fp, -136
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -7231,7 +7481,7 @@ L316DEV:
 	push	a0, sp
 	lw	a0, -8(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7243,9 +7493,9 @@ L316DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L317DEV
+	beqz	a0, L363DEV
 	j	TLlfat12_write_cleanup
-L317DEV:
+L363DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -32(fp)
@@ -7254,9 +7504,27 @@ L317DEV:
 	push	a0, sp
 	lw	a0, -40(fp)
 	pop	a1, sp
-	blt	a1, a0, L319DEV
-	j	L318DEV
-L319DEV:
+	blt	a1, a0, L365DEV
+	j	L364DEV
+L365DEV:
+	llw	a0, Cfat12_write_zero
+	beqz	a0, L366DEV
+	lw	a0, 16(fp)
+	push	a0, sp
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -32(fp)
+	push	a0, sp
+	lw	a0, -4(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	push	ra, sp
+	call	Cmemset
+	pop	ra, sp
+	addi	sp, sp, 12
+	j	L367DEV
+L366DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, 12(fp)
@@ -7271,6 +7539,7 @@ L319DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
+L367DEV:
 	addi	a0, fp, -136
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -7284,7 +7553,7 @@ L319DEV:
 	push	a0, sp
 	lw	a0, -8(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7296,57 +7565,8 @@ L319DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	j	L320DEV
-L318DEV:
-	#bank data
-L321DEV:
-	#d8	"N"
-	#d8	"e"
-	#d8	"e"
-	#d8	"d"
-	#d8	"e"
-	#d8	"d"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"p"
-	#d8	"o"
-	#d8	"s"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	44
-	#d8	32
-	#d8	"s"
-	#d8	"i"
-	#d8	"z"
-	#d8	"e"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	10
-	#d8	0
-	#d8	0
-	#bank text
-	lw	a0, -40(fp)
-	push	a0, sp
-	lw	a0, -32(fp)
-	push	a0, sp
-	lw	a0, 16(fp)
-	push	a0, sp
-	la	a0, L321DEV
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	call	Ctxtmod_printf
-	pop	ra, sp
-	addi	sp, sp, 20
+	j	L368DEV
+L364DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -32(fp)
@@ -7368,80 +7588,19 @@ L321DEV:
 	pop	a1, sp
 	exch	a0, a1
 	idiv	zero, a0, a0, a1
-	beqz	a0, L322DEV
+	beqz	a0, L369DEV
 	li	a0, 1
-	j	L323DEV
-L322DEV:
+	j	L370DEV
+L369DEV:
 	li	a0, 0
-L323DEV:
+L370DEV:
 	push	a0, sp
 	lw	a0, -36(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -36(fp)
-	#bank data
-L324DEV:
-	#d8	"C"
-	#d8	"l"
-	#d8	"u"
-	#d8	"s"
-	#d8	"t"
-	#d8	"e"
-	#d8	"r"
-	#d8	"s"
-	#d8	32
-	#d8	"t"
-	#d8	"o"
-	#d8	32
-	#d8	"w"
-	#d8	"r"
-	#d8	"i"
-	#d8	"t"
-	#d8	"e"
-	#d8	58
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	46
-	#d8	32
-	#d8	"W"
-	#d8	"r"
-	#d8	"i"
-	#d8	"t"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	32
-	#d8	"b"
-	#d8	"y"
-	#d8	"t"
-	#d8	"e"
-	#d8	"s"
-	#d8	32
-	#d8	"i"
-	#d8	"n"
-	#d8	32
-	#d8	"l"
-	#d8	"o"
-	#d8	"a"
-	#d8	"d"
-	#d8	"e"
-	#d8	"d"
-	#d8	32
-	#d8	"c"
-	#d8	"l"
-	#d8	"u"
-	#d8	"s"
-	#d8	"t"
-	#d8	"e"
-	#d8	"r"
-	#d8	10
-	#d8	0
-	#d8	0
-	#bank text
+	llw	a0, Cfat12_write_zero
+	beqz	a0, L371DEV
 	lw	a0, -40(fp)
 	push	a0, sp
 	lw	a0, -32(fp)
@@ -7449,16 +7608,20 @@ L324DEV:
 	exch	a0, a1
 	sub	a0, a0, a1
 	push	a0, sp
-	lw	a0, -36(fp)
+	li	a0, 0
 	push	a0, sp
-	la	a0, L324DEV
+	lw	a0, -32(fp)
 	push	a0, sp
-	la	a0, Cglobal_ctx
+	lw	a0, -4(fp)
+	pop	a1, sp
+	add	a0, a1, a0
 	push	a0, sp
 	push	ra, sp
-	call	Ctxtmod_printf
+	call	Cmemset
 	pop	ra, sp
-	addi	sp, sp, 16
+	addi	sp, sp, 12
+	j	L372DEV
+L371DEV:
 	lw	a0, -40(fp)
 	push	a0, sp
 	lw	a0, -32(fp)
@@ -7478,6 +7641,7 @@ L324DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
+L372DEV:
 	addi	a0, fp, -136
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -7491,7 +7655,7 @@ L324DEV:
 	push	a0, sp
 	lw	a0, -8(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7505,9 +7669,9 @@ L324DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -136
 	lw	a0, 0(a0)
-	beqz	a0, L325DEV
+	beqz	a0, L373DEV
 	j	TLlfat12_write_cleanup
-L325DEV:
+L373DEV:
 	lw	a0, -36(fp)
 	lw	t0, -36(fp)
 	subi	t0, t0, 1; cgdeclw
@@ -7521,7 +7685,7 @@ L325DEV:
 	sw	a0, -12(fp)
 	li	a0, 0
 	sw	a0, -16(fp)
-L326DEV:
+L374DEV:
 	lw	a0, -16(fp)
 	push	a0, sp
 	lw	a0, -36(fp)
@@ -7531,23 +7695,17 @@ L326DEV:
 	exch	a0, a1
 	sub	a0, a0, a1
 	pop	a1, sp
-	blt	a1, a0, L330DEV
-	j	L328DEV
-L330DEV:
-	j	L327DEV
-L329DEV:
+	blt	a1, a0, L378DEV
+	j	L376DEV
+L378DEV:
+	j	L375DEV
+L377DEV:
 	lw	a0, -16(fp)
 	lw	t0, -16(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -16(fp)
-	j	L326DEV
-L327DEV:
-	li	a0, 6908265
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
+	j	L374DEV
+L375DEV:
 	lw	a0, -20(fp)
 	push	a0, sp
 	lw	a0, -52(fp)
@@ -7561,16 +7719,16 @@ L327DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	blt	a1, a0, L332DEV
-	j	L331DEV
-L332DEV:
+	blt	a1, a0, L380DEV
+	j	L379DEV
+L380DEV:
 	addi	a0, fp, -136
 	push	a0, sp
 	lw	a0, -24(fp)
 	pop	a1, sp
 	sw	a0, 0(a1)
 	j	TLlfat12_write_cleanup
-L331DEV:
+L379DEV:
 	li	a0, 36
 	push	a0, sp
 	lw	a0, -48(fp)
@@ -7596,18 +7754,6 @@ L331DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -8(fp)
-	li	a0, 1366
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -8(fp)
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
 	addi	a0, fp, -136
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -7621,7 +7767,7 @@ L331DEV:
 	push	a0, sp
 	lw	a0, -8(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7633,11 +7779,25 @@ L331DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L333DEV
+	beqz	a0, L381DEV
 	j	TLlfat12_write_cleanup
-L333DEV:
+L381DEV:
 	lw	a0, -24(fp)
 	sw	a0, -20(fp)
+	llw	a0, Cfat12_write_zero
+	beqz	a0, L382DEV
+	lw	a0, -40(fp)
+	push	a0, sp
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -4(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cmemset
+	pop	ra, sp
+	addi	sp, sp, 12
+	j	L383DEV
+L382DEV:
 	lw	a0, -40(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
@@ -7652,6 +7812,7 @@ L333DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
+L383DEV:
 	lw	a0, -40(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
@@ -7671,7 +7832,7 @@ L333DEV:
 	push	a0, sp
 	lw	a0, -8(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7685,11 +7846,11 @@ L333DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -136
 	lw	a0, 0(a0)
-	beqz	a0, L334DEV
+	beqz	a0, L384DEV
 	j	TLlfat12_write_cleanup
-L334DEV:
-	j	L329DEV
-L328DEV:
+L384DEV:
+	j	L377DEV
+L376DEV:
 	lw	a0, -20(fp)
 	push	a0, sp
 	lw	a0, -52(fp)
@@ -7703,16 +7864,16 @@ L328DEV:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	blt	a1, a0, L336DEV
-	j	L335DEV
-L336DEV:
+	blt	a1, a0, L386DEV
+	j	L385DEV
+L386DEV:
 	addi	a0, fp, -136
 	push	a0, sp
 	lw	a0, -24(fp)
 	pop	a1, sp
 	sw	a0, 0(a1)
 	j	TLlfat12_write_cleanup
-L335DEV:
+L385DEV:
 	li	a0, 36
 	push	a0, sp
 	lw	a0, -48(fp)
@@ -7738,18 +7899,6 @@ L335DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -8(fp)
-	li	a0, 1367
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
-	lw	a0, -8(fp)
-	push	a0, sp
-	push	ra, sp
-	call	Ctrace
-	pop	ra, sp
-	addi	sp, sp, 4
 	addi	a0, fp, -136
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -7763,7 +7912,7 @@ L335DEV:
 	push	a0, sp
 	lw	a0, -8(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7775,9 +7924,9 @@ L335DEV:
 	addi	sp, sp, 16
 	pop	a1, sp
 	sw	a0, 0(a1)
-	beqz	a0, L337DEV
+	beqz	a0, L387DEV
 	j	TLlfat12_write_cleanup
-L337DEV:
+L387DEV:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
@@ -7785,79 +7934,20 @@ L337DEV:
 	exch	a0, a1
 	sub	a0, a0, a1
 	sw	a0, -44(fp)
-	#bank data
-L338DEV:
-	#d8	"W"
-	#d8	"r"
-	#d8	"i"
-	#d8	"t"
-	#d8	"i"
-	#d8	"n"
-	#d8	"g"
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	32
-	#d8	40
-	#d8	"c"
-	#d8	"u"
-	#d8	"r"
-	#d8	"r"
-	#d8	32
-	#d8	37
-	#d8	"d"
-	#d8	41
-	#d8	32
-	#d8	"b"
-	#d8	"y"
-	#d8	"t"
-	#d8	"e"
-	#d8	"s"
-	#d8	32
-	#d8	"i"
-	#d8	"n"
-	#d8	32
-	#d8	"t"
-	#d8	"h"
-	#d8	"e"
-	#d8	32
-	#d8	"t"
-	#d8	"a"
-	#d8	"i"
-	#d8	"l"
-	#d8	32
-	#d8	"c"
-	#d8	"l"
-	#d8	"u"
-	#d8	"s"
-	#d8	"t"
-	#d8	"e"
-	#d8	"r"
-	#d8	32
-	#d8	91
-	#d8	37
-	#d8	"x"
-	#d8	93
-	#d8	10
-	#d8	0
-	#d8	0
-	#d8	0
-	#d8	0
-	#bank text
-	lw	a0, -24(fp)
-	push	a0, sp
-	lw	a0, -12(fp)
-	push	a0, sp
+	llw	a0, Cfat12_write_zero
+	beqz	a0, L388DEV
 	lw	a0, -44(fp)
 	push	a0, sp
-	la	a0, L338DEV
+	li	a0, 0
 	push	a0, sp
-	la	a0, Cglobal_ctx
+	lw	a0, -4(fp)
 	push	a0, sp
 	push	ra, sp
-	call	Ctxtmod_printf
+	call	Cmemset
 	pop	ra, sp
-	addi	sp, sp, 20
+	addi	sp, sp, 12
+	j	L389DEV
+L388DEV:
 	lw	a0, -44(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
@@ -7872,6 +7962,7 @@ L338DEV:
 	call	Cmemcpy
 	pop	ra, sp
 	addi	sp, sp, 12
+L389DEV:
 	lw	a0, -44(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
@@ -7891,7 +7982,7 @@ L338DEV:
 	push	a0, sp
 	lw	a0, -8(fp)
 	push	a0, sp
-	li	a0, 36
+	li	a0, 56
 	push	a0, sp
 	lw	a0, -52(fp)
 	pop	a1, sp
@@ -7905,12 +7996,12 @@ L338DEV:
 	sw	a0, 0(a1)
 	addi	a0, fp, -136
 	lw	a0, 0(a0)
-	beqz	a0, L339DEV
+	beqz	a0, L390DEV
 	j	TLlfat12_write_cleanup
-L339DEV:
+L390DEV:
 	lw	a0, -24(fp)
 	sw	a0, -28(fp)
-L320DEV:
+L368DEV:
 TLlfat12_write_end:
 	lw	a0, 8(fp)
 	push	a0, sp
@@ -7972,12 +8063,12 @@ TLlfat12_write_end:
 	pop	a1, sp
 	add	a0, a1, a0
 	lw	a0, 0(a0)
-	beqz	a0, L340DEV
+	beqz	a0, L391DEV
 	lw	a0, 16(fp)
-	j	L341DEV
-L340DEV:
+	j	L392DEV
+L391DEV:
 	li	a0, 0
-L341DEV:
+L392DEV:
 	pop	a1, sp
 	add	a0, a1, a0
 	pop	a1, sp
@@ -7991,12 +8082,14 @@ L341DEV:
 	lw	a0, -28(fp)
 	pop	a1, sp
 	sw	a0, 0(a1)
+	li	a0, 0
+	push	a0, sp
 	lw	a0, 8(fp)
 	push	a0, sp
 	push	ra, sp
 	call	Cfat12_update_entry
 	pop	ra, sp
-	addi	sp, sp, 4
+	addi	sp, sp, 8
 TLlfat12_write_cleanup:
 	lw	a0, -4(fp)
 	push	a0, sp
@@ -8006,15 +8099,227 @@ TLlfat12_write_cleanup:
 	addi	sp, sp, 4
 	addi	a0, fp, -136
 	lw	a0, 0(a0)
-	j	L308DEV
-L308DEV:
+	j	L354DEV
+L354DEV:
 	addi	sp, sp, 136
+	pop	fp, sp
+	ret
+	#bank data
+	L393DEV:	#res 512
+	#bank text
+	;#globl	Cfat12_rename
+	#align 32
+Cfat12_rename:	push	fp, sp
+	mv	fp, sp
+	addi	sp, sp, -152
+	li	a0, 0
+	push	a0, sp
+	lw	a0, 12(fp)
+	pop	a1, sp
+	sub	a0, a1, a0
+	seqz	a0, a0
+	bnez	a0, L395DEV
+	li	a0, 0
+	push	a0, sp
+	lw	a0, 16(fp)
+	pop	a1, sp
+	sub	a0, a1, a0
+	seqz	a0, a0
+L395DEV:
+	beqz	a0, L396DEV
+	li	a0, -40
+	j	L394DEV
+L396DEV:
+	lw	a0, 16(fp)
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_find
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -4(fp)
+	pop	a1, sp
+	beq	a1, a0, L398DEV
+	j	L397DEV
+L398DEV:
+	li	a0, -50
+	j	L394DEV
+L397DEV:
+	lw	a0, 12(fp)
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_find
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	beqz	a0, L399DEV
+	lw	a0, -4(fp)
+	j	L394DEV
+L399DEV:
+	la	a0, L393DEV
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	li	a0, 48
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 56
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	push	ra, sp
+	call	Cdisk_load_sector
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	beqz	a0, L400DEV
+	lw	a0, -4(fp)
+	j	L394DEV
+L400DEV:
+	la	a0, L393DEV
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	li	a0, 52
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_parse_entry
+	pop	ra, sp
+	addi	sp, sp, 8
+	la	a0, L393DEV
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	li	a0, 52
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 229
+	pop	a1, sp
+	sb	a0, 0(a1)
+	la	a0, L393DEV
+	push	a0, sp
+	addi	a0, fp, -152
+	push	a0, sp
+	li	a0, 48
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 56
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	push	ra, sp
+	call	Cdisk_store_sector
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	beqz	a0, L401DEV
+	lw	a0, -4(fp)
+	j	L394DEV
+L401DEV:
+	lw	a0, 16(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfs_fname_from_path
+	pop	ra, sp
+	addi	sp, sp, 4
+	sw	a0, -8(fp)
+	addi	a0, fp, -24
+	push	a0, sp
+	lw	a0, -8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_parse_fname
+	pop	ra, sp
+	addi	sp, sp, 8
+	li	a0, 8
+	push	a0, sp
+	addi	a0, fp, -24
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	push	ra, sp
+	call	Cstrncpy
+	pop	ra, sp
+	addi	sp, sp, 12
+	li	a0, 3
+	push	a0, sp
+	addi	a0, fp, -24
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	push	ra, sp
+	call	Cstrncpy
+	pop	ra, sp
+	addi	sp, sp, 12
+	lw	a0, 16(fp)
+	push	a0, sp
+	addi	a0, fp, -72
+	push	a0, sp
+	lw	a0, 8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Cfat12_create_entry
+	pop	ra, sp
+	addi	sp, sp, 12
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	beqz	a0, L402DEV
+	lw	a0, -4(fp)
+	j	L394DEV
+L402DEV:
+	li	a0, 0
+	j	L394DEV
+L394DEV:
+	addi	sp, sp, 152
 	pop	fp, sp
 	ret
 	#bank text
 	#bank data
 	;#globl	Ckb_key_pressed
 Ckb_key_pressed:	#d32	0
+	;#globl	Ckpress_buff
+	Ckpress_buff:	#res 20
+	Ckpress_data:	#res 4
 	#bank text
 	;#globl	Ckb_get
 	#align 32
@@ -8045,20 +8350,6 @@ Ckb_get:	push	fp, sp
 	pop	a1, sp
 	add	a0, a1, a0
 	push	a0, sp
-	lw	a0, -4(fp)
-	push	a0, sp
-	li	a0, 24
-	pop	a1, sp
-	exch	a0, a1
-	shra	a0, a0, a1
-	pop	a1, sp
-	sb	a0, 0(a1)
-	li	a0, 8
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
 	li	a0, 65535
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -8066,74 +8357,246 @@ Ckb_get:	push	fp, sp
 	and	a0, a0, a1
 	pop	a1, sp
 	sw	a0, 0(a1)
-L342DEV:
+	li	a0, 8
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 24
+	pop	a1, sp
+	exch	a0, a1
+	shra	a0, a0, a1
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	and	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 12
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 24
+	pop	a1, sp
+	exch	a0, a1
+	shra	a0, a0, a1
+	push	a0, sp
+	li	a0, 4
+	pop	a1, sp
+	and	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 16
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 24
+	pop	a1, sp
+	exch	a0, a1
+	shra	a0, a0, a1
+	push	a0, sp
+	li	a0, 2
+	pop	a1, sp
+	and	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+	li	a0, 20
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	lw	a0, -4(fp)
+	push	a0, sp
+	li	a0, 24
+	pop	a1, sp
+	exch	a0, a1
+	shra	a0, a0, a1
+	push	a0, sp
+	li	a0, 1
+	pop	a1, sp
+	and	a0, a0, a1
+	pop	a1, sp
+	sw	a0, 0(a1)
+L403DEV:
+	addi	sp, sp, 4
+	pop	fp, sp
+	ret
+	;#globl	Ckb_last
+	#align 32
+Ckb_last:	push	fp, sp
+	mv	fp, sp
+	addi	sp, sp, -4
+	llw	a0, Ckb_key_pressed
+	beqz	a0, L405DEV
+	llw	a0, Ckb_key_pressed
+	llw	t0, Ckb_key_pressed
+	subi	t0, t0, 1
+	ssw	t0, Ckb_key_pressed, t5
+	lw	a0, 8(fp)
+	push	a0, sp
+	la	a0, Ckpress_buff
+	push	a0, sp
+	push	ra, sp
+	call	Cringbuff_pop
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	lw	a0, -4(fp)
+	j	L404DEV
+	j	L406DEV
+L405DEV:
+	li	a0, -60
+	j	L404DEV
+L406DEV:
+L404DEV:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
 	#align 32
-Cprintable:	push	fp, sp
+Ckb_char_handler:	push	fp, sp
 	mv	fp, sp
-	mv	a0, zero
-	lbu	a0, 11(fp)
-	push	a0, sp
-	li	a0, 32
-	pop	a1, sp
-	slt	a0, a1, a0
-	seqz	a0, a0
-	beqz	a0, L344DEV
-	mv	a0, zero
-	lbu	a0, 11(fp)
-	push	a0, sp
-	li	a0, 126
-	pop	a1, sp
-	sgt	a0, a1, a0
-	seqz	a0, a0
-L344DEV:
-	snez	a0, a0
-	bnez	a0, L345DEV
-	mv	a0, zero
-	lbu	a0, 11(fp)
-	push	a0, sp
-	li	a0, 161
-	pop	a1, sp
-	slt	a0, a1, a0
-	seqz	a0, a0
-L345DEV:
-	beqz	a0, L346DEV
-	mv	a0, zero
-	lbu	a0, 11(fp)
-	j	L343DEV
-	j	L347DEV
-L346DEV:
-	li	a0, 63
-	j	L343DEV
-L347DEV:
-L343DEV:
-	pop	fp, sp
-	ret
-	#align 32
-Ckb_callback:	push	fp, sp
-	mv	fp, sp
-	addi	sp, sp, -12
-	addi	a0, fp, -12
+	addi	sp, sp, -28
+	push	ra, sp
+	call	Cion_lock_system
+	pop	ra, sp
+	addi	a0, fp, -28
 	push	a0, sp
 	push	ra, sp
 	call	Ckb_get
 	pop	ra, sp
 	addi	sp, sp, 4
-	li	a0, 1
-	ssw	a0, Ckb_key_pressed, t0
-	li	a0, 0
-	j	L348DEV
-L348DEV:
-	addi	sp, sp, 12
+	llw	a0, Ckb_key_pressed
+	llw	t0, Ckb_key_pressed;cgincgw
+	addi	t0, t0, 1
+	ssw	t0, Ckb_key_pressed, t5
+	addi	a0, fp, -28
+	push	a0, sp
+	la	a0, Ckpress_buff
+	push	a0, sp
+	push	ra, sp
+	call	Cringbuff_push
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	push	ra, sp
+	call	Cion_unlock_system
+	pop	ra, sp
+	lw	a0, -4(fp)
+	j	L407DEV
+L407DEV:
+	addi	sp, sp, 28
+	pop	fp, sp
+	ret
+	#align 32
+Ckb_scan_handler:	push	fp, sp
+	mv	fp, sp
+	addi	sp, sp, -28
+	push	ra, sp
+	call	Cion_lock_system
+	pop	ra, sp
+	addi	a0, fp, -28
+	push	a0, sp
+	push	ra, sp
+	call	Ckb_get
+	pop	ra, sp
+	addi	sp, sp, 4
+	llw	a0, Ckb_key_pressed
+	llw	t0, Ckb_key_pressed;cgincgw
+	addi	t0, t0, 1
+	ssw	t0, Ckb_key_pressed, t5
+	addi	a0, fp, -28
+	push	a0, sp
+	la	a0, Ckpress_buff
+	push	a0, sp
+	push	ra, sp
+	call	Cringbuff_push
+	pop	ra, sp
+	addi	sp, sp, 8
+	sw	a0, -4(fp)
+	push	ra, sp
+	call	Cion_unlock_system
+	pop	ra, sp
+	lw	a0, -4(fp)
+	j	L408DEV
+L408DEV:
+	addi	sp, sp, 28
 	pop	fp, sp
 	ret
 	;#globl	Ckb_init
 	#align 32
 Ckb_init:	push	fp, sp
 	mv	fp, sp
-	la	a0, Ckb_callback
+	li	a0, 2400
+	push	a0, sp
+	push	ra, sp
+	call	Ckmalloc
+	pop	ra, sp
+	addi	sp, sp, 4
+	ssw	a0, Ckpress_data, t0
+	li	a0, 2400
+	push	a0, sp
+	li	a0, 0
+	push	a0, sp
+	llw	a0, Ckpress_data
+	push	a0, sp
+	push	ra, sp
+	call	Cmemset
+	pop	ra, sp
+	addi	sp, sp, 12
+	la	a0, Ckpress_buff
+	push	a0, sp
+	llw	a0, Ckpress_data
+	pop	a1, sp
+	sw	a0, 0(a1)
+	la	a0, Ckpress_buff
+	push	a0, sp
+	li	a0, 4
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sw	a0, 0(a1)
+	la	a0, Ckpress_buff
+	push	a0, sp
+	li	a0, 8
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sw	a0, 0(a1)
+	la	a0, Ckpress_buff
+	push	a0, sp
+	li	a0, 12
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 24
+	pop	a1, sp
+	sw	a0, 0(a1)
+	la	a0, Ckpress_buff
+	push	a0, sp
+	li	a0, 16
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 2376
+	pop	a1, sp
+	sw	a0, 0(a1)
+	la	a0, Ckb_char_handler
 	push	a0, sp
 	li	a0, 11
 	push	a0, sp
@@ -8141,7 +8604,7 @@ Ckb_init:	push	fp, sp
 	call	Cregister_interrupt_handler
 	pop	ra, sp
 	addi	sp, sp, 8
-	la	a0, Ckb_callback
+	la	a0, Ckb_scan_handler
 	push	a0, sp
 	li	a0, 12
 	push	a0, sp
@@ -8155,23 +8618,149 @@ Ckb_init:	push	fp, sp
 	call	Ckb_setmode
 	pop	ra, sp
 	addi	sp, sp, 4
-L349DEV:
+L409DEV:
 	pop	fp, sp
 	ret
 	#bank text
 	#bank data
-Ctick:	#d32	0
+L410DEV:
+	#d32	0
 	#bank text
 	#align 32
 Ctimer_callback:	push	fp, sp
 	mv	fp, sp
-	llw	a0, Ctick
-	llw	t0, Ctick;cgincgw
-	addi	t0, t0, 1
-	ssw	t0, Ctick, t5
+	addi	sp, sp, -8
+	push	ra, sp
+	call	Cion_lock_system
+	pop	ra, sp
+	push	ra, sp
+	call	Cclock_read_counter
+	pop	ra, sp
+	ssw	a0, L410DEV, t0
+	llw	a0, Cion_sleeping_task_list
+	sw	a0, -4(fp)
 	li	a0, 0
-	j	L350DEV
-L350DEV:
+	ssw	a0, Cion_sleeping_task_list, t0
+L413DEV:
+	li	a0, 0
+	push	a0, sp
+	lw	a0, -4(fp)
+	pop	a1, sp
+	bne	a1, a0, L414DEV
+	j	L412DEV
+L414DEV:
+	lw	a0, -4(fp)
+	sw	a0, -8(fp)
+	li	a0, 8
+	push	a0, sp
+	lw	a0, -8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	sw	a0, -4(fp)
+	li	a0, 28
+	push	a0, sp
+	lw	a0, -8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	llw	a0, L410DEV
+	pop	a1, sp
+	bge	a0, a1, L416DEV
+	j	L415DEV
+L416DEV:
+	#bank data
+L417DEV:
+	#d8	"W"
+	#d8	"a"
+	#d8	"k"
+	#d8	"i"
+	#d8	"n"
+	#d8	32
+	#d8	"u"
+	#d8	"p"
+	#d8	32
+	#d8	"t"
+	#d8	"a"
+	#d8	"s"
+	#d8	"k"
+	#d8	32
+	#d8	37
+	#d8	"s"
+	#d8	44
+	#d8	32
+	#d8	"e"
+	#d8	"x"
+	#d8	"p"
+	#d8	"i"
+	#d8	"r"
+	#d8	"y"
+	#d8	32
+	#d8	"s"
+	#d8	"e"
+	#d8	"t"
+	#d8	32
+	#d8	"f"
+	#d8	"o"
+	#d8	"r"
+	#d8	32
+	#d8	37
+	#d8	"d"
+	#d8	10
+	#d8	0
+	#d8	0
+	#d8	0
+	#d8	0
+	#bank text
+	li	a0, 28
+	push	a0, sp
+	lw	a0, -8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	push	a0, sp
+	li	a0, 32
+	push	a0, sp
+	lw	a0, -8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	la	a0, L417DEV
+	push	a0, sp
+	la	a0, Cglobal_ctx
+	push	a0, sp
+	push	ra, sp
+	call	Ctxtmod_printf
+	pop	ra, sp
+	addi	sp, sp, 16
+	lw	a0, -8(fp)
+	push	a0, sp
+	push	ra, sp
+	call	Ctask_unblock
+	pop	ra, sp
+	addi	sp, sp, 4
+	j	L418DEV
+L415DEV:
+	li	a0, 8
+	push	a0, sp
+	lw	a0, -8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	llw	a0, Cion_sleeping_task_list
+	pop	a1, sp
+	sw	a0, 0(a1)
+	lw	a0, -8(fp)
+	ssw	a0, Cion_sleeping_task_list, t0
+L418DEV:
+	j	L413DEV
+L412DEV:
+	push	ra, sp
+	call	Cion_unlock_system
+	pop	ra, sp
+L411DEV:
+	addi	sp, sp, 8
 	pop	fp, sp
 	ret
 	;#globl	Ctimer_init
@@ -8200,7 +8789,7 @@ Ctimer_init:	push	fp, sp
 	call	Ctimer_interval_set
 	pop	ra, sp
 	addi	sp, sp, 8
-L351DEV:
+L419DEV:
 	addi	sp, sp, 8
 	pop	fp, sp
 	ret

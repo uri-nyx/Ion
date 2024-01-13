@@ -1,25 +1,35 @@
-__SECTION_TEXT = 0
-__SECTION_DATA = 4096
+__SECTION_TEXT = 0x1000
+__SECTION_DATA = 0x2000
 #bankdef text {
     #addr __SECTION_TEXT
-    #size 4096
+    #size 0x1000
     #outp 0
 }
 
 #bankdef data {
     #addr __SECTION_DATA
-    #size 4096
-    #outp 4096 * 8
+    #size 0x1000
+    #outp 0x1000 * 8
 }
 	#bank text
 
-; HEADER
-;  Entry, text Load addr,  n of pages, W | X
-#d32 Cmain, __SECTION_TEXT, 1, 3
-;  data load addr,  n of pages, W, END
-#d32 __SECTION_DATA, 1, 2, 0xdeadbeef
-	#bank text
-	;#globl	Cmain
+; struct aout_exec {
+;         int a_midmag;
+;         int a_text;
+;         int a_data;
+;         int a_bss;
+;         int a_syms;
+;         int a_entry;
+;         int a_trsize;
+;         int a_drsize;
+; };
+
+_exec_header:
+;	MAGIC  TEXTSZ  DATASZ  BSS_SZ
+#d32	0o314, 0x1000, 0x1000, 0x0000
+;	SYMS   ENTRY   TRSIZE  DRSIZE
+#d32	0x000, Cmain,  0x0000, 0x0000
+
 	#align 32
 Cmain:	push	fp, sp
 	mv	fp, sp
@@ -79,17 +89,6 @@ L2:
 	#d8	0
 	#bank text
 	la	a0, L2
-	push	a0, sp
-	la	a0, Cglobal_ctx
-	push	a0, sp
-	push	ra, sp
-	trace   a0, sp, zero, zero
-	call	Ctxtmod_puts
-	trace	a0, a0, a0, a0
-	pop	ra, sp
-	addi	sp, sp, 8
-	li	a0, -1
-	j	L1
-L1:
-	pop	fp, sp
-	ret
+	li	a7, 3 ; exit syscall
+	syscall zero, 0x20 ; invoke syscall handler
+	

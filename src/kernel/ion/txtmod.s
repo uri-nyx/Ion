@@ -37,31 +37,22 @@ Cupdate_cursor:	push	fp, sp
 	pop	a1, sp
 	mul	zero, a0, a1, a0
 	sw	a0, -4(fp)
-	li	a0, 60
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lw	a0, 0(a0)
-	beqz	a0, L3
-	li	a0, 60
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 0
-	pop	a1, sp
-	sw	a0, 0(a1)
 	li	a0, 44
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	lbu	a0, 0(a0);notaligned
-	j	L5
-L6:
-L7:
+	j	L38
+L39:
+L40:
+	li	a0, 60
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	beqz	a0, L41
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -90,6 +81,7 @@ L7:
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
 	sb	a0, 0(a1)
+L41:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -113,7 +105,14 @@ L7:
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
 	sb	a0, 0(a1)
-L8:
+L42:
+	li	a0, 60
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lw	a0, 0(a0)
+	beqz	a0, L43
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -133,6 +132,7 @@ L8:
 	li	a0, 32
 	pop	a1, sp
 	sb	a0, 0(a1)
+L43:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -152,21 +152,29 @@ L8:
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
 	sb	a0, 0(a1)
-	j	L4
-L9:
-	j	L4
-	j	L4
-L5:
-	la	a1, L10
+	j	L37
+L44:
+	j	L37
+	j	L37
+L38:
+	la	a1, L45
 	j	switch
-L10:
+L45:
 	#d32	3
-	#d32	5, L6
-	#d32	1, L7
-	#d32	0, L8
-	#d32	L9
-L4:
-L3:
+	#d32	5, L39
+	#d32	1, L40
+	#d32	0, L42
+	#d32	L44
+L37:
+	li	a0, 60
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sw	a0, 0(a1)
 	li	a0, 64
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -176,7 +184,7 @@ L3:
 	lw	a0, -4(fp)
 	pop	a1, sp
 	sw	a0, 0(a1)
-L2:
+L36:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
@@ -212,16 +220,16 @@ Ctxtmod_clear:	push	fp, sp
 	sw	a0, -12(fp)
 	li	a0, 0
 	sw	a0, -4(fp)
-L12:
+L47:
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, -12(fp)
 	pop	a1, sp
-	blt	a1, a0, L16
-	j	L14
-L16:
-	j	L13
-L15:
+	blt	a1, a0, L51
+	j	L49
+L51:
+	j	L48
+L50:
 	li	a0, 48
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -233,8 +241,8 @@ L15:
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -4(fp)
-	j	L12
-L13:
+	j	L47
+L48:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -258,9 +266,9 @@ L13:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	blt	a0, a1, L18
-	j	L17
-L18:
+	blt	a0, a1, L53
+	j	L52
+L53:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -284,10 +292,10 @@ L18:
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
 	sb	a0, 0(a1)
-L17:
-	j	L15
-L14:
-L11:
+L52:
+	j	L50
+L49:
+L46:
 	addi	sp, sp, 12
 	pop	fp, sp
 	ret
@@ -403,7 +411,7 @@ Ctxtmod_scroll:	push	fp, sp
 	addi	sp, sp, 12
 	li	a0, 0
 	sw	a0, -4(fp)
-L20:
+L55:
 	lw	a0, -4(fp)
 	push	a0, sp
 	li	a0, 8
@@ -422,11 +430,11 @@ L20:
 	pop	a1, sp
 	mul	zero, a0, a1, a0
 	pop	a1, sp
-	blt	a1, a0, L24
-	j	L22
-L24:
-	j	L21
-L23:
+	blt	a1, a0, L59
+	j	L57
+L59:
+	j	L56
+L58:
 	li	a0, 48
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -438,8 +446,8 @@ L23:
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -4(fp)
-	j	L20
-L21:
+	j	L55
+L56:
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, -8(fp)
@@ -458,9 +466,9 @@ L21:
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	blt	a0, a1, L26
-	j	L25
-L26:
+	blt	a0, a1, L61
+	j	L60
+L61:
 	li	a0, 1
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -479,10 +487,10 @@ L26:
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
 	sb	a0, 0(a1)
-L25:
-	j	L23
-L22:
-L19:
+L60:
+	j	L58
+L57:
+L54:
 	addi	sp, sp, 8
 	pop	fp, sp
 	ret
@@ -529,30 +537,62 @@ Ctxtmod_clear_update:	push	fp, sp
 	call	Cupdate_cursor
 	pop	ra, sp
 	addi	sp, sp, 4
-L27:
+L62:
 	pop	fp, sp
 	ret
+	#bank data
+L63:
+	#d32	0
+L64:
+	#d32	0
+	#bank text
 	;#globl	Ctxtmod_putc
 	#align 32
 Ctxtmod_putc:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -4
+	li	a0, 20
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
 	li	a0, 8
 	push	a0, sp
-	mv	a0, zero
-	lbu	a0, 15(fp)
+	lw	a0, 8(fp)
 	pop	a1, sp
-	sub	a0, a1, a0
-	seqz	a0, a0
-	beqz	a0, L29
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	pop	a1, sp
+	mul	zero, a0, a1, a0
+	push	a0, sp
 	li	a0, 16
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	lbu	a0, 0(a0);notaligned
-L29:
-	beqz	a0, L30
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 48
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	pop	a1, sp
+	mul	zero, a0, a1, a0
+	sw	a0, -4(fp)
+	li	a0, 8
+	push	a0, sp
+	mv	a0, zero
+	lbu	a0, 15(fp)
+	pop	a1, sp
+	beq	a1, a0, L67
+	j	L66
+L67:
 	li	a0, 60
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -567,21 +607,70 @@ L29:
 	lw	a0, 8(fp)
 	pop	a1, sp
 	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sub	a0, a1, a0
+	seqz	a0, a0
+	beqz	a0, L68
+	li	a0, 20
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	push	a0, sp
+	li	a0, 0
+	pop	a1, sp
+	sub	a0, a1, a0
+	snez	a0, a0
+L68:
+	beqz	a0, L69
+	li	a0, 20
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
 	mv	a1, a0
 	lbu	a0, 0(a0);notaligned
 	lbu	t0, 0(a1)
 	subi	t0, t0, 1
 	sb	t0, 0(a1)
-	j	L31
-L30:
+	li	a0, 16
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	push	a0, sp
+	li	a0, 8
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	lbu	a0, 0(a0);notaligned
+	pop	a1, sp
+	sb	a0, 0(a1)
+L69:
+	li	a0, 16
+	push	a0, sp
+	lw	a0, 8(fp)
+	pop	a1, sp
+	add	a0, a1, a0
+	mv	a1, a0
+	lbu	a0, 0(a0);notaligned
+	lbu	t0, 0(a1)
+	subi	t0, t0, 1
+	sb	t0, 0(a1)
+L66:
 	li	a0, 9
 	push	a0, sp
 	mv	a0, zero
 	lbu	a0, 15(fp)
 	pop	a1, sp
-	beq	a1, a0, L33
-	j	L32
-L33:
+	beq	a1, a0, L71
+	j	L70
+L71:
 	li	a0, 60
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -629,16 +718,16 @@ L33:
 	and	a0, a0, a1
 	pop	a1, sp
 	sb	a0, 0(a1)
-	j	L34
-L32:
+	j	L72
+L70:
 	li	a0, 13
 	push	a0, sp
 	mv	a0, zero
 	lbu	a0, 15(fp)
 	pop	a1, sp
-	beq	a1, a0, L36
-	j	L35
-L36:
+	beq	a1, a0, L74
+	j	L73
+L74:
 	li	a0, 60
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -657,16 +746,16 @@ L36:
 	li	a0, 0
 	pop	a1, sp
 	sb	a0, 0(a1)
-	j	L37
-L35:
+	j	L75
+L73:
 	li	a0, 10
 	push	a0, sp
 	mv	a0, zero
 	lbu	a0, 15(fp)
 	pop	a1, sp
-	beq	a1, a0, L39
-	j	L38
-L39:
+	beq	a1, a0, L77
+	j	L76
+L77:
 	li	a0, 60
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -695,59 +784,25 @@ L39:
 	lbu	t0, 0(a1)
 	addi	t0, t0, 1
 	sb	t0, 0(a1)
-	j	L40
-L38:
+	j	L78
+L76:
 	mv	a0, zero
 	lbu	a0, 15(fp)
 	push	a0, sp
 	li	a0, 32
 	pop	a1, sp
-	bge	a1, a0, L42
-	j	L41
-L42:
-	li	a0, 20
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lbu	a0, 0(a0);notaligned
-	push	a0, sp
-	li	a0, 8
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lbu	a0, 0(a0);notaligned
-	pop	a1, sp
-	mul	zero, a0, a1, a0
-	push	a0, sp
-	li	a0, 16
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lbu	a0, 0(a0);notaligned
-	pop	a1, sp
-	add	a0, a1, a0
-	push	a0, sp
-	li	a0, 48
-	push	a0, sp
-	lw	a0, 8(fp)
-	pop	a1, sp
-	add	a0, a1, a0
-	lbu	a0, 0(a0);notaligned
-	pop	a1, sp
-	mul	zero, a0, a1, a0
-	sw	a0, -4(fp)
+	bge	a1, a0, L80
+	j	L79
+L80:
 	li	a0, 44
 	push	a0, sp
 	lw	a0, 8(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	lbu	a0, 0(a0);notaligned
-	j	L44
-L45:
-L46:
+	j	L82
+L83:
+L84:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -771,7 +826,7 @@ L46:
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
 	sb	a0, 0(a1)
-L47:
+L85:
 	li	a0, 56
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -787,20 +842,20 @@ L47:
 	lbu	a0, 15(fp)
 	pop	a1, sp
 	sb	a0, 0(a1)
-	j	L43
-L48:
-	j	L43
-	j	L43
-L44:
-	la	a1, L49
+	j	L81
+L86:
+	j	L81
+	j	L81
+L82:
+	la	a1, L87
 	j	switch
-L49:
+L87:
 	#d32	3
-	#d32	5, L45
-	#d32	1, L46
-	#d32	0, L47
-	#d32	L48
-L43:
+	#d32	5, L83
+	#d32	1, L84
+	#d32	0, L85
+	#d32	L86
+L81:
 	li	a0, 16
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -811,11 +866,10 @@ L43:
 	lbu	t0, 0(a1)
 	addi	t0, t0, 1
 	sb	t0, 0(a1)
-L41:
-L40:
-L37:
-L34:
-L31:
+L79:
+L78:
+L75:
+L72:
 	li	a0, 16
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -830,9 +884,9 @@ L31:
 	add	a0, a1, a0
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
-	bge	a1, a0, L51
-	j	L50
-L51:
+	bge	a1, a0, L89
+	j	L88
+L89:
 	li	a0, 16
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -852,7 +906,7 @@ L51:
 	lbu	t0, 0(a1)
 	addi	t0, t0, 1
 	sb	t0, 0(a1)
-L50:
+L88:
 	li	a0, 20
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -867,9 +921,9 @@ L50:
 	add	a0, a1, a0
 	lbu	a0, 0(a0);notaligned
 	pop	a1, sp
-	bge	a1, a0, L53
-	j	L52
-L53:
+	bge	a1, a0, L91
+	j	L90
+L91:
 	lw	a0, 8(fp)
 	push	a0, sp
 	push	ra, sp
@@ -928,14 +982,14 @@ L53:
 	lbu	t0, 0(a1)
 	subi	t0, t0, 1
 	sb	t0, 0(a1)
-L52:
+L90:
 	lw	a0, 8(fp)
 	push	a0, sp
 	push	ra, sp
 	call	Cupdate_cursor
 	pop	ra, sp
 	addi	sp, sp, 4
-L28:
+L65:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
@@ -944,14 +998,14 @@ L28:
 Ctxtmod_puts:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -4
-L56:
+L94:
 	lw	a0, 12(fp)
 	lw	t0, 12(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, 12(fp)
 	lbu	a0, 0(a0);notaligned
 	sb	a0, -1(fp)
-	beqz	a0, L55
+	beqz	a0, L93
 	mv	a0, zero
 	lbu	a0, -1(fp)
 	push	a0, sp
@@ -961,14 +1015,14 @@ L56:
 	call	Ctxtmod_putc
 	pop	ra, sp
 	addi	sp, sp, 8
-	j	L56
-L55:
-L54:
+	j	L94
+L93:
+L92:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
 	#bank data
-	L57:	#res 4096
+	L95:	#res 4096
 	#bank text
 	;#globl	Ctxtmod_printf
 	#align 32
@@ -983,7 +1037,7 @@ Ctxtmod_printf:	push	fp, sp
 	push	a0, sp
 	lw	a0, 12(fp)
 	push	a0, sp
-	la	a0, L57
+	la	a0, L95
 	push	a0, sp
 	li	a0, 0
 	push	a0, sp
@@ -993,7 +1047,7 @@ Ctxtmod_printf:	push	fp, sp
 	call	C_vformat
 	pop	ra, sp
 	addi	sp, sp, 20
-	la	a0, L57
+	la	a0, L95
 	push	a0, sp
 	lw	a0, 8(fp)
 	push	a0, sp
@@ -1002,7 +1056,7 @@ Ctxtmod_printf:	push	fp, sp
 	pop	ra, sp
 	addi	sp, sp, 8
 	li	a0, 0
-	j	L58
-L58:
+	j	L96
+L96:
 	pop	fp, sp
 	ret

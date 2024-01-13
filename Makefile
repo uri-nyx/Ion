@@ -13,7 +13,7 @@ all: clean tps_image load run
 
 # Run
 run: load
-	cd emu && ./TaleaZ -f minimal.bin -z 1 --scale=2
+	cd emu && ./TaleaZ -f minimal.bin -z 7 --scale=2
 
 # Load into tps
 load: tps_image
@@ -38,7 +38,7 @@ $(BUILD)/kernel.bin: $(SRC)/kernel/kernel.asm $(SRC)/kernel/entry.asm
 	$(LD) $(SECTIONALIGN) $(SRC)/kernel/entry.asm $(SRC)/kernel/system/int.asm \
 	$(SRC)/kernel/drivers/timer.asm $(SRC)/kernel/drivers/kb.asm \
 	$(SRC)/kernel/kernel.asm $(SRC)/kernel/ion/txtmod.asm $(SRC)/kernel/system/paging.asm \
-	$(SRC)/kernel/drivers/disk.asm $(LIBS)/libk.asm
+	$(SRC)/kernel/drivers/disk.asm $(SRC)/kernel/system/task.asm $(LIBS)/libk.asm
 	$(AS) linker.out -pf symbols | grep '^__text_size\|^__data_size\|^__data_start\|^__bss_size\|^__bss_start' | cat - $(SRC)/kernel/linker.ln > link.s
 	sed -i -E '/__text_size|__data_size|__data_start|__bss_size|__bss_start/d' linker.out
 	sed -i 's/;bank/#bank/g' linker.out
@@ -55,7 +55,7 @@ symbols: $(SRC)/kernel/kernel.asm $(SRC)/kernel/entry.asm
 	$(LD) $(SECTIONALIGN) $(SRC)/kernel/entry.asm $(SRC)/kernel/system/int.asm \
 	$(SRC)/kernel/drivers/timer.asm $(SRC)/kernel/drivers/kb.asm \
 	$(SRC)/kernel/kernel.asm $(SRC)/kernel/ion/txtmod.asm $(SRC)/kernel/system/paging.asm \
-	$(SRC)/kernel/drivers/disk.asm $(LIBS)/libk.asm
+	$(SRC)/kernel/drivers/disk.asm $(SRC)/kernel/system/task.asm $(LIBS)/libk.asm
 	$(AS) linker.out -pf symbols
 
 ION=$(shell cd $(SRC)/kernel && ls ion/*.c)

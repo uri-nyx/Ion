@@ -1,4 +1,10 @@
 	#bank text
+	#bank data
+	;#globl	Cpaging_ctx
+	Cpaging_ctx:	#res 4
+	;#globl	Cpaging_currpt
+Cpaging_currpt:	#d32	0
+	#bank text
 	#align 32
 Cset_frame:	push	fp, sp
 	mv	fp, sp
@@ -57,7 +63,7 @@ Cset_frame:	push	fp, sp
 	or	a0, a0, a1
 	pop	a1, sp
 	sw	a0, 0(a1)
-L113:
+L237:
 	addi	sp, sp, 12
 	pop	fp, sp
 	ret
@@ -120,7 +126,7 @@ Cclear_frame:	push	fp, sp
 	and	a0, a0, a1
 	pop	a1, sp
 	sw	a0, 0(a1)
-L114:
+L238:
 	addi	sp, sp, 12
 	pop	fp, sp
 	ret
@@ -169,8 +175,8 @@ Ctest_frame:	push	fp, sp
 	shll	a0, a0, a1
 	pop	a1, sp
 	and	a0, a0, a1
-	j	L115
-L115:
+	j	L239
+L239:
 	addi	sp, sp, 12
 	pop	fp, sp
 	ret
@@ -180,7 +186,7 @@ Cfirst_frame:	push	fp, sp
 	addi	sp, sp, -12
 	li	a0, 0
 	sw	a0, -4(fp)
-L117:
+L241:
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -191,17 +197,17 @@ L117:
 	exch	a0, a1
 	shra	a0, a0, a1
 	pop	a1, sp
-	blt	a1, a0, L121
-	j	L119
-L121:
-	j	L118
-L120:
+	blt	a1, a0, L245
+	j	L243
+L245:
+	j	L242
+L244:
 	lw	a0, -4(fp)
 	lw	t0, -4(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -4(fp)
-	j	L117
-L118:
+	j	L241
+L242:
 	li	a0, 4
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -216,27 +222,27 @@ L118:
 	push	a0, sp
 	li	a0, -1
 	pop	a1, sp
-	bne	a1, a0, L123
-	j	L122
-L123:
+	bne	a1, a0, L247
+	j	L246
+L247:
 	li	a0, 0
 	sw	a0, -8(fp)
-L124:
+L248:
 	lw	a0, -8(fp)
 	push	a0, sp
 	li	a0, 32
 	pop	a1, sp
-	blt	a1, a0, L128
-	j	L126
-L128:
-	j	L125
-L127:
+	blt	a1, a0, L252
+	j	L250
+L252:
+	j	L249
+L251:
 	lw	a0, -8(fp)
 	lw	t0, -8(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -8(fp)
-	j	L124
-L125:
+	j	L248
+L249:
 	li	a0, 1
 	push	a0, sp
 	lw	a0, -8(fp)
@@ -259,7 +265,7 @@ L125:
 	lw	a0, -12(fp)
 	pop	a1, sp
 	and	a0, a0, a1
-	bnez	a0, L129
+	bnez	a0, L253
 	li	a0, 4
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -273,14 +279,14 @@ L125:
 	lw	a0, -8(fp)
 	pop	a1, sp
 	add	a0, a1, a0
-	j	L116
-L129:
-	j	L127
-L126:
-L122:
-	j	L120
-L119:
-L116:
+	j	L240
+L253:
+	j	L251
+L250:
+L246:
+	j	L244
+L243:
+L240:
 	addi	sp, sp, 12
 	pop	fp, sp
 	ret
@@ -305,22 +311,22 @@ Calloc_pages_contiguous:	push	fp, sp
 	sw	a0, 0(a1)
 	li	a0, 0
 	sw	a0, -4(fp)
-L131:
+L255:
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, 16(fp)
 	pop	a1, sp
-	blt	a1, a0, L135
-	j	L133
-L135:
-	j	L132
-L134:
+	blt	a1, a0, L259
+	j	L257
+L259:
+	j	L256
+L258:
 	lw	a0, -4(fp)
 	lw	t0, -4(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -4(fp)
-	j	L131
-L132:
+	j	L255
+L256:
 	lw	a0, 12(fp)
 	push	a0, sp
 	li	a0, 0
@@ -339,10 +345,10 @@ L132:
 	pop	ra, sp
 	addi	sp, sp, 16
 	sw	a0, -8(fp)
-	beqz	a0, L136
+	beqz	a0, L260
 	lw	a0, -8(fp)
-	j	L130
-L136:
+	j	L254
+L260:
 	lw	a0, 12(fp)
 	push	a0, sp
 	li	a0, 4
@@ -361,11 +367,11 @@ L136:
 	add	a0, a1, a0
 	pop	a1, sp
 	sw	a0, 0(a1)
-	j	L134
-L133:
+	j	L258
+L257:
 	li	a0, 0
-	j	L130
-L130:
+	j	L254
+L254:
 	addi	sp, sp, 8
 	pop	fp, sp
 	ret
@@ -376,22 +382,22 @@ Crelease_pages_contiguous:	push	fp, sp
 	addi	sp, sp, -4
 	li	a0, 0
 	sw	a0, -4(fp)
-L138:
+L262:
 	lw	a0, -4(fp)
 	push	a0, sp
 	lw	a0, 12(fp)
 	pop	a1, sp
-	blt	a1, a0, L142
-	j	L140
-L142:
-	j	L139
-L141:
+	blt	a1, a0, L266
+	j	L264
+L266:
+	j	L263
+L265:
 	lw	a0, -4(fp)
 	lw	t0, -4(fp)
 	addi	t0, t0, 1; cginclw
 	sw	t0, -4(fp)
-	j	L138
-L139:
+	j	L262
+L263:
 	lw	a0, 16(fp)
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -419,9 +425,9 @@ L139:
 	sub	a0, a0, a1
 	pop	a1, sp
 	sw	a0, 0(a1)
-	j	L141
-L140:
-L137:
+	j	L265
+L264:
+L261:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
@@ -435,13 +441,13 @@ Calloc_frame:	push	fp, sp
 	push	a0, sp
 	li	a0, 0
 	pop	a1, sp
-	bne	a1, a0, L145
-	j	L144
-L145:
+	bne	a1, a0, L269
+	j	L268
+L269:
 	li	a0, 0
-	j	L143
-	j	L146
-L144:
+	j	L267
+	j	L270
+L268:
 	lw	a0, 20(fp)
 	push	a0, sp
 	push	ra, sp
@@ -453,12 +459,12 @@ L144:
 	push	a0, sp
 	lw	a0, -4(fp)
 	pop	a1, sp
-	beq	a1, a0, L148
-	j	L147
-L148:
+	beq	a1, a0, L272
+	j	L271
+L272:
 	li	a0, -10
-	j	L143
-L147:
+	j	L267
+L271:
 	lw	a0, 20(fp)
 	push	a0, sp
 	li	a0, 4096
@@ -485,12 +491,12 @@ L147:
 	lw	a0, 0(a0)
 	push	a0, sp
 	lw	a0, 12(fp)
-	beqz	a0, L149
+	beqz	a0, L273
 	li	a0, 2
-	j	L150
-L149:
+	j	L274
+L273:
 	li	a0, 0
-L150:
+L274:
 	pop	a1, sp
 	or	a0, a0, a1
 	pop	a1, sp
@@ -509,12 +515,12 @@ L150:
 	lw	a0, 0(a0)
 	push	a0, sp
 	lw	a0, 16(fp)
-	beqz	a0, L151
+	beqz	a0, L275
 	li	a0, 1
-	j	L152
-L151:
+	j	L276
+L275:
 	li	a0, 0
-L152:
+L276:
 	pop	a1, sp
 	or	a0, a0, a1
 	pop	a1, sp
@@ -528,6 +534,8 @@ L152:
 	mul	zero, a0, a1, a0
 	pop	a1, sp
 	sw	a0, 0(a1)
+	llw	a0, Cpaging_currpt
+	push	a0, sp
 	li	a0, 8
 	push	a0, sp
 	lw	a0, 8(fp)
@@ -548,11 +556,11 @@ L152:
 	push	ra, sp
 	call	Cmmu_map
 	pop	ra, sp
-	addi	sp, sp, 12
-L146:
+	addi	sp, sp, 16
+L270:
 	li	a0, 0
-	j	L143
-L143:
+	j	L267
+L267:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
@@ -565,10 +573,10 @@ Cfree_frame:	push	fp, sp
 	lw	a0, 0(a0)
 	seqz	a0, a0
 	sw	a0, -4(fp)
-	beqz	a0, L154
-	j	L153
-	j	L155
-L154:
+	beqz	a0, L278
+	j	L277
+	j	L279
+L278:
 	lw	a0, 12(fp)
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -582,14 +590,16 @@ L154:
 	li	a0, 0
 	pop	a1, sp
 	sw	a0, 0(a1)
+	llw	a0, Cpaging_currpt
+	push	a0, sp
 	lw	a0, -4(fp)
 	push	a0, sp
 	push	ra, sp
 	call	Cmmu_unmap
 	pop	ra, sp
-	addi	sp, sp, 4
-L155:
-L153:
+	addi	sp, sp, 8
+L279:
+L277:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
@@ -598,7 +608,7 @@ L153:
 Cpage_fault_handler:	push	fp, sp
 	mv	fp, sp
 	#bank data
-L157:
+L281:
 	#d8	"P"
 	#d8	"a"
 	#d8	"g"
@@ -612,15 +622,15 @@ L157:
 	#d8	0
 	#d8	0
 	#bank text
-	la	a0, L157
+	la	a0, L281
 	push	a0, sp
 	push	ra, sp
 	call	Cpanic
 	pop	ra, sp
 	addi	sp, sp, 4
 	li	a0, -2
-	j	L156
-L156:
+	j	L280
+L280:
 	pop	fp, sp
 	ret
 	;#globl	Cpaging_init
@@ -628,6 +638,8 @@ L156:
 Cpaging_init:	push	fp, sp
 	mv	fp, sp
 	addi	sp, sp, -4
+	lw	a0, 8(fp)
+	ssw	a0, Cpaging_ctx, t0
 	lw	a0, 8(fp)
 	lw	a0, 0(a0)
 	push	a0, sp
@@ -648,24 +660,50 @@ Cpaging_init:	push	fp, sp
 	call	Cmemset
 	pop	ra, sp
 	addi	sp, sp, 12
-	llw	a0, CKernelPhys
-	sw	a0, -4(fp)
-L160:
-	lw	a0, -4(fp)
-	push	a0, sp
-	llw	a0, CKernelEnd
-	pop	a1, sp
-	blt	a1, a0, L161
-	j	L159
-L161:
 	lw	a0, 8(fp)
 	push	a0, sp
-	lw	a0, -4(fp)
+	li	a0, 0
 	push	a0, sp
 	push	ra, sp
 	call	Cset_frame
 	pop	ra, sp
 	addi	sp, sp, 8
+	llw	a0, Cpaging_currpt
+	push	a0, sp
+	li	a0, 0
+	push	a0, sp
+	li	a0, 0
+	push	a0, sp
+	li	a0, 0
+	push	a0, sp
+	push	ra, sp
+	call	Cmmu_map
+	pop	ra, sp
+	addi	sp, sp, 16
+	llw	a0, CKernelPhys
+	sw	a0, -4(fp)
+L284:
+	lw	a0, -4(fp)
+	push	a0, sp
+	llw	a0, CKernelEnd
+	pop	a1, sp
+	blt	a1, a0, L285
+	j	L283
+L285:
+	lw	a0, 8(fp)
+	push	a0, sp
+	li	a0, 16777215
+	push	a0, sp
+	lw	a0, -4(fp)
+	pop	a1, sp
+	and	a0, a0, a1
+	push	a0, sp
+	push	ra, sp
+	call	Cset_frame
+	pop	ra, sp
+	addi	sp, sp, 8
+	llw	a0, Cpaging_currpt
+	push	a0, sp
 	li	a0, 1
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -675,33 +713,39 @@ L161:
 	push	ra, sp
 	call	Cmmu_map
 	pop	ra, sp
-	addi	sp, sp, 12
+	addi	sp, sp, 16
 	li	a0, 4096
 	push	a0, sp
 	lw	a0, -4(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -4(fp)
-	j	L160
-L159:
+	j	L284
+L283:
 	li	a0, 15011840
 	sw	a0, -4(fp)
-L163:
+L287:
 	lw	a0, -4(fp)
 	push	a0, sp
 	li	a0, 15327232
 	pop	a1, sp
-	blt	a1, a0, L164
-	j	L162
-L164:
+	blt	a1, a0, L288
+	j	L286
+L288:
 	lw	a0, 8(fp)
 	push	a0, sp
+	li	a0, 16777215
+	push	a0, sp
 	lw	a0, -4(fp)
+	pop	a1, sp
+	and	a0, a0, a1
 	push	a0, sp
 	push	ra, sp
 	call	Cset_frame
 	pop	ra, sp
 	addi	sp, sp, 8
+	llw	a0, Cpaging_currpt
+	push	a0, sp
 	li	a0, 0
 	push	a0, sp
 	lw	a0, -4(fp)
@@ -711,15 +755,15 @@ L164:
 	push	ra, sp
 	call	Cmmu_map
 	pop	ra, sp
-	addi	sp, sp, 12
+	addi	sp, sp, 16
 	li	a0, 4096
 	push	a0, sp
 	lw	a0, -4(fp)
 	pop	a1, sp
 	add	a0, a1, a0
 	sw	a0, -4(fp)
-	j	L163
-L162:
+	j	L287
+L286:
 	la	a0, Cpage_fault_handler
 	push	a0, sp
 	li	a0, 7
@@ -734,7 +778,7 @@ L162:
 	call	C_mmu_enable
 	pop	ra, sp
 	addi	sp, sp, 4
-L158:
+L282:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret

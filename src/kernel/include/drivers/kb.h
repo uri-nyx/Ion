@@ -4,13 +4,16 @@
 #define KB_CHARMODE 0
 #define KB_SCANMODE 1
 
+extern int kb_keypressed;
+
 /**
  * @brief A key press
  *
  */
 struct kb_press {
-        char character, modifiers;
+        char character;
         int  scancode;
+        int  shift, ctrl, alt, meta;
 };
 
 /**
@@ -27,6 +30,9 @@ void kb_init(int mode);
  * @param[out] out the keypress
  */
 void kb_get(struct kb_press *out);
+
+int kb_last(struct kb_press *out);
+
 
 /**
  * @brief Set a keyboard mode

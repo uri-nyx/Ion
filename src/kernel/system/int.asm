@@ -33,14 +33,27 @@ INITIALIZE_IVT:
     swd a0, IVT_TIMER_INTERVAL(a1)
     la a0, ISR_VIDEO_REFRESH
     swd a0, IVT_VIDEO_REFRESH(a1)
+    la a0, SYSCALL_HANDLER
+    swd a0, 0x20*4(a1)
 
     ret
+
+SYSCALL_HANDLER:
+    push a2, sp
+    push a1, sp
+    push a0, sp 
+    push a7, sp
+    push ra, sp
+    call Csyscall   ; int syscall(a7, a0, a1, a2), the syscall handler
+    pop ra, sp
+    sysret
+
 
 IRQ_BASIC:
     ssw t5, __intcode, t6
     pop t5, sp
     mv t6, sp
-    save gp, t5, t6
+    save ra, t5, t6
     mv sp, t6
     llw a0, __intcode
     push a0, sp
@@ -48,15 +61,15 @@ IRQ_BASIC:
     call Cirq_handler
     pop ra, sp
     addi sp, sp, 4
-    int.set t5, t6
-    restore gp, t5, sp
+    sti
+    restore ra, t5, sp
 sysret
 
 ISR_BASIC:
     ssw t5, __intcode, t6
     pop t5, sp
     mv t6, sp
-    save gp, t5, t6
+    save ra, t5, t6
     mv sp, t6
     llw a0, __intcode
     push a0, sp
@@ -64,106 +77,117 @@ ISR_BASIC:
     call Cisr_handler
     pop ra, sp
     addi sp, sp, 4
-    int.set t5, t6
-    restore gp, t5, sp
+    sti
+    restore ra, t5, sp
 sysret
 
 __intcode: #d32 0
 
 ISR_RESET:
     push t5, sp
-    int.clear t5, t6
+    cli
     mv t4, zero
     j ISR_BASIC
 
 ISR_BUS_ERROR:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 2
     j ISR_BASIC
 
 ISR_ADDRESS_ERROR:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 3
     j ISR_BASIC
 
 ISR_ILLEGAL_INSTRUCTION:
     j $
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 4
     j ISR_BASIC
 
 ISR_DIVISION_ZERO:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 5
     j ISR_BASIC
 
 ISR_PRIVILEGE_VIOLATION:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 6
     j ISR_BASIC
 
 ISR_PAGE_FAULT:
     j $
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 7
     j ISR_BASIC
 
 ISR_ACCESS_VIOLATION:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 8
     j ISR_BASIC
 
 ISR_TTY_TRANSMIT:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 10
     j IRQ_BASIC
 
 ISR_KBD_CHARACTER:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 9 + 2
     j IRQ_BASIC
 
 ISR_KBD_SCANCODE:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 10 + 2
     j IRQ_BASIC
 
 ISR_TPS_LOAD_FINISHED:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 11 + 2
     j IRQ_BASIC
 
 ISR_DISK_LOAD_FINISHED:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 12 + 2
     j IRQ_BASIC
 
 ISR_TIMER_TIMEOUT:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 13 + 2
     j IRQ_BASIC
 
 ISR_TIMER_INTERVAL:
-    push t5, sp
-    int.clear t5, t6
-    li t5, 14 + 2
-    j IRQ_BASIC
+    ; cli
+    cli
+    mv t6, sp
+    save ra, t5, t6
+    mv sp, t6
+    ;swd sp, 0x220(zero)
+    push ra, sp
+    call Ctimer_callback
+    pop ra, sp
+    ;lwd t6, 0x220(zero)
+    mv t6, sp
+    restore ra, t5, t6
+    sti
+    sysret
+    ; sti
 
 ISR_VIDEO_REFRESH:
     push t5, sp
-    int.clear t5, t6
+    cli
     li t5, 15 + 2
     j IRQ_BASIC

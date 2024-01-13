@@ -3,6 +3,10 @@
 #include "include/system/error.h"
 #include <stdint.h>
 
+#define ION_PAGE_SZ 0x1000
+
+extern int paging_currpt;
+
 /**
  * @brief Maps a logical page with a physical frame
  *
@@ -18,6 +22,8 @@ struct ion_page {
 struct ion_frame_bitset {
         int32_t nframes, frames[512];
 };
+
+extern struct ion_frame_bitset *paging_ctx;
 
 /**
  * @brief Initializes paging

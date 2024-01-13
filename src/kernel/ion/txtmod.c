@@ -6,22 +6,24 @@ static void update_cursor(struct txtmod_ctx *ctx)
 {
         int cursor;
         cursor = ctx->bpc * (ctx->row * ctx->columns + ctx->col);
-        if (ctx->erase_cursor) {
-                ctx->erase_cursor = 0;
-                switch (ctx->mode) {
-                case TXTMOD_COMBINED:
-                case TXTMOD_RTEXT:
+
+        switch (ctx->mode) {
+        case TXTMOD_COMBINED:
+        case TXTMOD_RTEXT:
+                if (ctx->erase_cursor)
                         ctx->cbuff[ctx->prev_cursor + 1] = ctx->color;
-                        ctx->cbuff[cursor + 1] = ctx->cursoratt;
-                case TXTMOD_SIMPLE:
+                ctx->cbuff[cursor + 1] = ctx->cursoratt;
+        case TXTMOD_SIMPLE:
+                if (ctx->erase_cursor)
                         ctx->cbuff[ctx->prev_cursor] = ' ';
-                        ctx->cbuff[cursor] = ctx->ccursor;
-                        break;
-                default:
-                        break;
-                }
+                ctx->cbuff[cursor] = ctx->ccursor;
+                break;
+        default:
+                break;
         }
-        ctx->prev_cursor = cursor;
+
+        ctx->erase_cursor = 0;
+        ctx->prev_cursor  = cursor;
 }
 
 /* TODO: In assembly (using fill) */
@@ -64,17 +66,24 @@ void txtmod_clear_update(struct txtmod_ctx *ctx)
 
 void txtmod_putc(struct txtmod_ctx *ctx, char c)
 {
-        int position;
+        static int before_tab = 0;
+        static int prev_tab   = 0;
+        int        position;
+        position = (ctx->row * ctx->columns + ctx->col) * ctx->bpc;
 
         /* Handle a backspace, by moving the cursor back one space */
-        if (c == 0x08 && ctx->col) {
+        if (c == 0x08) {
                 ctx->erase_cursor = 1;
+                if (0 == ctx->col && ctx->row != 0) {
+                        ctx->row--;
+                        ctx->col = ctx->columns;
+                }
                 ctx->col--;
         }
 
         /* Handle a tab by increasing the cursor's X, but only to a point
         // where it is divisible by 8. */
-        else if (c == 0x09) {
+        if (c == 0x09) {
                 ctx->erase_cursor = 1;
                 ctx->col = (ctx->col + ctx->tabsize) & ~(ctx->tabsize - 1);
         }
@@ -94,7 +103,6 @@ void txtmod_putc(struct txtmod_ctx *ctx, char c)
         }
         /* // Handle any other printable character. */
         else if (c >= ' ') {
-                position = (ctx->row * ctx->columns + ctx->col) * ctx->bpc;
                 switch (ctx->mode) {
                 case TXTMOD_COMBINED:
                 case TXTMOD_RTEXT:
@@ -122,7 +130,6 @@ void txtmod_putc(struct txtmod_ctx *ctx, char c)
                 ctx->prev_cursor -= ctx->columns * ctx->bpc;
                 ctx->erase_cursor = 1;
                 ctx->row--;
-
         }
         /* // Move the hardware cursor. */
         update_cursor(ctx);

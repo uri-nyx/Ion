@@ -57,11 +57,13 @@ void *kmalloc(int size)
                         _asize = size * OVERALLOC;
                 sz = _asize * sizeof(int);
                 sz = ((sz + (0x1000 - 1)) & ~(0x1000 - 1));
+                trace(0x69696);
                 if (kmalloc_err = alloc_pages_contiguous(&kheap.current_page,
                                                          &newpage, sz / 0x1000,
                                                          0, 0, kmalloc_bitset))
                         return NULL;
-                kheap.current_page.page  = newpage.page;
+                kheap.current_page.page = newpage.page;
+                trace(newpage.page);
                 kheap.current_page.frame = newpage.frame;
                 kheap.current_page.perm  = newpage.perm;
                 _arena                   = (int *)newpage.page;
@@ -104,11 +106,13 @@ void *kmalloc(int size)
                                 n = size * OVERALLOC;
                         sz = n * sizeof(int);
                         sz = ((sz + (0x1000 - 1)) & ~(0x1000 - 1)); // align
+                        trace(0x79797);
                         if (kmalloc_err = alloc_pages_contiguous(
                                     &kheap.current_page, &newpage, sz / 0x1000,
                                     0, 0, kmalloc_bitset))
                                 return NULL;
-                        kheap.current_page.page  = newpage.page;
+                        kheap.current_page.page = newpage.page;
+                        trace(newpage.page);
                         kheap.current_page.frame = newpage.frame;
                         kheap.current_page.perm  = newpage.perm;
                         k                        = _asize;

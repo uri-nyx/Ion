@@ -21,7 +21,7 @@ Cisr_handler:	push	fp, sp
 	push	ra, sp
 	jalr	 ra, 0(a0)
 	pop	ra, sp
-L57:
+L164:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
@@ -42,7 +42,7 @@ Cirq_handler:	push	fp, sp
 	push	ra, sp
 	jalr	 ra, 0(a0)
 	pop	ra, sp
-L58:
+L165:
 	addi	sp, sp, 4
 	pop	fp, sp
 	ret
@@ -60,6 +60,6 @@ Cregister_interrupt_handler:	push	fp, sp
 	lw	a0, 12(fp)
 	pop	a1, sp
 	sw	a0, 0(a1)
-L59:
+L166:
 	pop	fp, sp
 	ret

@@ -1,0 +1,37 @@
+Kernel:
+        System:
+                filesystem:
+                        - Open modes (w, r, rw)
+                        - VFS structures
+                loader:
+                        - handle different formats
+                        - handle virtual memory
+                        A.out:
+                                
+
+        Drivers:
+                - graphics
+                - sound
+                - mouse
+                FAT12:
+                        - disable writing for read only files
+                FAT16:
+                        - find
+                        - create
+                        - open
+                        - close
+                        - read
+                        - write
+                        - mount
+        OS:
+                syscalls:
+                        - write
+                        - read
+                        - open
+                        - close
+                        - creat
+                        - exec / execve
+                        - sbrk
+                        - exit
+                - libc
+                - FILE API and file descriptors

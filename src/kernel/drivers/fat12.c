@@ -9,9 +9,14 @@
 #include <stdio.h>
 #include <string.h>
 
-static int               fat12_dont_read = 0;
 extern struct txtmod_ctx global_ctx;
-static int               to_be16(int le16)
+
+static int fat12_dont_read  = 0;
+static int fat12_write_zero = 0;
+
+static int fat12_get_cluster(ion_fs *fat12, int mark);
+
+static int to_be16(int le16)
 {
         return ((le16 << 8) & 0xff00) | ((le16 >> 8) & 0xff);
 }
@@ -191,19 +196,17 @@ static void fat12_unparse_entry(fat12_entry *entry, char *buff)
 static int fat12_find_dir(ion_fs *fat12, ion_file *directory, ion_file *file,
                           void *buff, char *fname)
 {
-        extern struct txtmod_ctx global_ctx;
-        char                     dirname[12];
-        int                      i, j;
-        int                      sectors_in_dir, entries_per_sector;
-        fat12_entry              dir;
-        fat12_mountinfo         *info;
-        struct ion_error         err;
+        char             dirname[12];
+        int              i, j;
+        int              sectors_in_dir, entries_per_sector;
+        fat12_entry      dir;
+        fat12_mountinfo *info;
+        struct ion_error err;
 
         info = (struct _fat12_mountinfo *)fat12->meta;
         if (info == NULL)
                 return ION_ENOMOUNT;
-        /* TODO: find workaround for this (basically follow the chain, a
-         * recursive read) */
+        /* DIRECTORY ENDS WHEN ENTRY IS 0 */
         sectors_in_dir     = info->sectors_per_cluster;
         entries_per_sector = info->sector_size / FAT12_ENTRY_LEN;
 
@@ -213,6 +216,8 @@ static int fat12_find_dir(ion_fs *fat12, ion_file *directory, ion_file *file,
                         return err.number;
 
                 for (j = 0; j < entries_per_sector; j++) {
+                        if (0 == *(char *)buff + j * FAT12_ENTRY_LEN)
+                                goto notfound;
                         fat12_parse_entry(&dir, buff + j * FAT12_ENTRY_LEN);
 
                         memcpy(dirname, dir.fname, 11);
@@ -230,21 +235,22 @@ static int fat12_find_dir(ion_fs *fat12, ion_file *directory, ion_file *file,
                                                 info->sectors_per_cluster;
                                 file->entry_offset = j * FAT12_ENTRY_LEN;
 
-                                txtmod_printf(
-                                        &global_ctx,
-                                        "FIND File: %s, in DIR %s [%x], Block: %x\n",
-                                        fname, directory->name,
-                                        directory->first_cluster,
-                                        file->entry_block);
+                                file->flags = 0;
                                 if (dir.flags & FAT12_DIRECTORY)
-                                        file->flags = ION_FS_DIR;
+                                        file->flags |= ION_FS_DIR;
                                 else
-                                        file->flags = ION_FS_FILE;
+                                        file->flags |= ION_FS_FILE;
+
+                                if (dir.flags & FAT12_READ_ONLY)
+                                        file->flags |= ION_FS_RDONLY;
+                                if (dir.flags & FAT12_SYSTEM)
+                                        file->flags |= ION_FS_SYSTEM;
                                 return 0;
                         }
                 }
         }
 
+notfound:
         file->flags = ION_FS_INVALID;
         return ION_ENOTFOUND;
 }
@@ -252,13 +258,12 @@ static int fat12_find_dir(ion_fs *fat12, ion_file *directory, ion_file *file,
 static int fat12_find_root(ion_fs *fat12, ion_file *file, void *buff,
                            char *fname)
 {
-        extern struct txtmod_ctx global_ctx;
-        char                     dirname[12];
-        int                      i, j;
-        int                      entries_per_sector;
-        fat12_entry              dir;
-        fat12_mountinfo         *info;
-        struct ion_error         err;
+        char             dirname[12];
+        int              i, j;
+        int              entries_per_sector;
+        fat12_entry      dir;
+        fat12_mountinfo *info;
+        struct ion_error err;
 
         info = (struct _fat12_mountinfo *)fat12->meta;
         if (info == NULL)
@@ -287,16 +292,16 @@ static int fat12_find_root(ion_fs *fat12, ion_file *file, void *buff,
                                 file->entry_block   = info->root_offset + i;
                                 file->entry_offset  = j * FAT12_ENTRY_LEN;
 
-                                txtmod_printf(
-                                        &global_ctx,
-                                        "FIND IN ROOT %s first: %x, entry %x\n",
-                                        fname, file->first_cluster,
-                                        file->entry_block);
-
+                                file->flags = 0;
                                 if (dir.flags & FAT12_DIRECTORY)
-                                        file->flags = ION_FS_DIR;
+                                        file->flags |= ION_FS_DIR;
                                 else
-                                        file->flags = ION_FS_FILE;
+                                        file->flags |= ION_FS_FILE;
+
+                                if (dir.flags & FAT12_READ_ONLY)
+                                        file->flags |= ION_FS_RDONLY;
+                                if (dir.flags & FAT12_SYSTEM)
+                                        file->flags |= ION_FS_SYSTEM;
                                 return 0;
                         }
                 }
@@ -430,8 +435,6 @@ static int fat12_find(ion_fs *fat12, ion_file *file, char *path)
                                 return ION_EEXPECTEDDIR;
                         }
                 } else {
-                        txtmod_printf(&global_ctx, "Finding %s\n",
-                                      currfile.name);
                         err.number = fat12_find_dir(fat12, &currfile, &tmp_file,
                                                     buff, pfname);
                         if (err.number) {
@@ -541,9 +544,8 @@ cleanup:
         return err.number;
 }
 
-static int fat12_update_entry(ion_file *file)
+static int fat12_update_entry(ion_file *file, int option)
 {
-        extern struct txtmod_ctx global_ctx;
         char             sector[512], *e; // TODO: allocate this dynamically
         ion_fs          *fat12;
         struct ion_error err;
@@ -567,7 +569,13 @@ static int fat12_update_entry(ion_file *file)
         clock_gettime(&itime);
         fat12_tofattime(&itime, &ftime);
 
-        e                        = (char *)(sector + file->entry_offset);
+        e = (char *)(sector + file->entry_offset);
+
+        if (option & FAT12_O_FREEENTRY) {
+                e[0] = 0xe5;
+                goto store;
+        }
+
         e[FAT12_ENTRY_FSIZE + 3] = file->lenght >> 24;
         e[FAT12_ENTRY_FSIZE + 2] = file->lenght >> 16;
         e[FAT12_ENTRY_FSIZE + 1] = file->lenght >> 8;
@@ -579,17 +587,10 @@ static int fat12_update_entry(ion_file *file)
         e[FAT12_ENTRY_LAST + 1]  = ftime.date >> 8;
         e[FAT12_ENTRY_LAST]      = ftime.date & 0xFF;
 
-        txtmod_printf(
-                &global_ctx,
-                "Updating entry for file %s: len %d, in block %x, offset %x. Date: %p\n",
-                file->name, file->lenght, file->entry_block, file->entry_offset,
-                ftime.date);
-
+store:
         err.number =
                 disk_store_sector(&fat12->device, file->entry_block, sector);
         if (err.number) {
-                txtmod_printf(&global_ctx, "Error updating entry! [%d]\n",
-                              err.number);
                 return err.number;
         }
 
@@ -598,8 +599,7 @@ static int fat12_update_entry(ion_file *file)
 
 static int fat12_next_or_alloc_cluster(ion_fs *fat12, int cluster)
 {
-        extern struct txtmod_ctx global_ctx;
-        int                      next_cluster, free_cluster, err;
+        int next_cluster, free_cluster, err;
         next_cluster = fat12_next_cluster(fat12, cluster);
 
         if (next_cluster < 0) {
@@ -607,34 +607,26 @@ static int fat12_next_or_alloc_cluster(ion_fs *fat12, int cluster)
         } else if (next_cluster >= 0xff8) {
                 /* alloc a free cluster */
                 free_cluster = fat12_get_cluster(fat12, 1);
-                txtmod_printf(&global_ctx, "Free cluster [%x]\t", free_cluster);
-                trace(0x775);
-                if (free_cluster == 0) {
-                        trace(0x774);
 
+                if (free_cluster == 0) {
                         return ION_ENCLUSTER;
                 } else if (free_cluster < 0) {
-                        trace(0x773);
                         return free_cluster; /* Error code*/
                 }
-                trace(0x772);
+
                 if (err = fat12_mark_fat_entry(fat12, cluster, free_cluster)) {
                         return err;
                 }
 
-                trace(0x776);
                 return free_cluster;
         }
 
-        txtmod_printf(&global_ctx, "Next cluster [%x]\t", next_cluster);
-        trace(0x777);
         return next_cluster;
 }
 
-int fat12_create_entry(ion_fs *fat12, fat12_entry *entry, char *path)
+static int fat12_create_entry(ion_fs *fat12, fat12_entry *entry, char *path)
 {
-        extern struct txtmod_ctx global_ctx;
-        int                      i;
+        int   i;
         char *fname, rest_of_path[100]; // TODO: amybe allocate dinamycally
         char  sector[512], entrybuff[FAT12_ENTRY_LEN]; // TODO: allocate this
                                                       // dynamically
@@ -666,18 +658,13 @@ int fat12_create_entry(ion_fs *fat12, fat12_entry *entry, char *path)
                 /* We are not creating a file in the root directory */
                 fat12_find(fat12, &dir, rest_of_path);
 
-                if (dir.flags == ION_FS_DIR) {
+                if (dir.flags & ION_FS_DIR) {
                         /* Iterate and locate last entry */
 
                         offset = fat12_free_dir_entry(fat12, &dir, sector,
                                                       &sectornum);
                         if (offset < 0)
                                 return offset;
-                        txtmod_printf(
-                                &global_ctx,
-                                "Creating file %s, DATE: %d TIME: %d MS: %d\n",
-                                entry->fname, entry->creation_date,
-                                entry->creation_time, entry->creation_ms);
                         fat12_unparse_entry(entry, entrybuff);
                         memcpy(sector + offset, entrybuff, FAT12_ENTRY_LEN);
                         disk_store_sector(&fat12->device, sectornum, sector);
@@ -700,14 +687,13 @@ int fat12_create_entry(ion_fs *fat12, fat12_entry *entry, char *path)
 
 /* Returns the number of the first free data cluster found, 0 if not more free
  * clusters, or an error code */
-int fat12_get_cluster(ion_fs *fat12, int mark)
+static int fat12_get_cluster(ion_fs *fat12, int mark)
 {
-        extern struct txtmod_ctx global_ctx;
-        int                      i, j, entries;
-        int                      fat_entryhi, fat_entrylo;
-        char                    *FAT;
-        fat12_mountinfo         *info;
-        struct ion_error         err;
+        int              i, j, entries;
+        int              fat_entryhi, fat_entrylo;
+        char            *FAT;
+        fat12_mountinfo *info;
+        struct ion_error err;
 
         info = (struct _fat12_mountinfo *)fat12->meta;
         FAT  = kmalloc_e(info->sector_size * 2, &err);
@@ -789,8 +775,12 @@ void fat12_init(ion_fs *fat12)
 {
         strcpy(fat12->name, "FAT12");
         fat12->mount = fat12_mount;
+        fat12->creat = fat12_create_file;
+        fat12->delet = fat12_delete_file;
+        fat12->mkdir = fat12_create_dir;
+        fat12->rmdir = fat12_delete_dir;
         fat12->read  = fat12_read;
-        fat12->write = NULL;
+        fat12->write = fat12_write;
         fat12->close = fat12_close;
         fat12->open  = fat12_open;
         fat12->seek  = fat12_seek;
@@ -816,7 +806,7 @@ int fat12_read(ion_file *file, void *buff, int count)
         fat12_mountinfo *info;
         struct ion_error err;
 
-        if ((file->flags == ION_FS_FILE) && (file->pos >= file->lenght)) {
+        if ((file->flags & ION_FS_FILE) && (file->pos >= file->lenght)) {
                 file->eof = 1;
                 return ION_EOF;
         }
@@ -827,6 +817,9 @@ int fat12_read(ion_file *file, void *buff, int count)
                 return ION_EDEVTOOBIG;
         if (filesystems[file->device] == NULL)
                 return ION_ENOFS;
+
+        if (file->flags & ION_FS_WRONLY)
+                return ION_EBADF;
 
         left         = count;
         fat12        = filesystems[file->device];
@@ -896,7 +889,7 @@ int fat12_read(ion_file *file, void *buff, int count)
                         file->eof = 1;
                         kfree(data);
                         kfree(FAT);
-                        return (file->flags == ION_FS_FILE) ? ION_EOF : 0;
+                        return (file->flags & ION_FS_FILE) ? ION_EOF : 0;
                         // RETURN EOF
                         // AS ERROR?
                 }
@@ -938,14 +931,13 @@ int fat12_read(ion_file *file, void *buff, int count)
         return ION_EOK;
 }
 
-int fat12_open(ion_file *outfile, struct disk *device, char *path, int flags)
+int fat12_open(ion_file *outfile, struct disk *device, char *path)
 {
         struct ion_error err;
         ion_fs          *fat12;
         ion_file         file;
 
         fat12 = filesystems[device->dev];
-
         if (fat12 == NULL) {
                 err.number = ION_ENOFS;
                 goto end;
@@ -965,6 +957,7 @@ end:
 int fat12_close(ion_file *file)
 {
         fs_currid--;
+        return 0;
 }
 
 int fat12_seek(ion_file *file, int offset, int flags)
@@ -978,31 +971,167 @@ int fat12_seek(ion_file *file, int offset, int flags)
                 err             = fat12_read(file, NULL, offset);
                 fat12_dont_read = 0;
                 break;
-        case FAT12_SEEK_END:
-                file->pos       = file->lenght;
+        case FAT12_SEEK_CURR:
                 fat12_dont_read = 1;
                 err             = fat12_read(file, NULL, offset);
                 fat12_dont_read = 0;
                 break;
+        case FAT12_SEEK_END:
+                file->pos        = file->lenght;
+                fat12_write_zero = 1;
+                err              = fat12_write(file, NULL, offset);
+                fat12_write_zero = 0;
+                break;
         default:
-                err = ION_EDEFAULT;
+                err = ION_EINVAL;
                 break;
         }
 
         return err;
 }
 
+int fat12_create_file(ion_fs *fat12, char *path, int flags)
+{
+        int         err;
+        char       *fname, dosfname[13];
+        fat12_entry entry;
+        ion_file    file;
+
+        if (path == NULL)
+                return ION_ENULLFNAME;
+
+        fname = fs_fname_from_path(path);
+
+        fat12_parse_fname(fname, dosfname);
+
+        strncpy(entry.fname, dosfname, 8);
+        strncpy(entry.ext, dosfname + 8, 3);
+        entry.size  = 0;
+        entry.flags = FAT12_ARCHIVE;
+        entry.flags |= (flags & ION_FS_SYSTEM) ? FAT12_SYSTEM : 0;
+        entry.flags |= (flags & ION_FS_RDONLY) ? FAT12_READ_ONLY : 0;
+
+        if (fat12_find(fat12, &file, path) == ION_EOK) {
+                /* Truncate */
+                err = fat12_delete_file(fat12, path);
+                if (err)
+                        return err;
+        }
+
+        entry.first_cluster = err = fat12_get_cluster(fat12, FAT12_O_MARKEND);
+        if (err == 0)
+                return ION_EDISKFULL;
+        else if (err < 0)
+                return err;
+
+        err = fat12_create_entry(fat12, &entry, path);
+        return err;
+}
+
+int fat12_create_dir(ion_fs *fat12, char *path)
+{
+        int         err;
+        char       *fname, dosfname[13];
+        fat12_entry entry;
+        ion_file    file;
+
+        if (path == NULL)
+                return ION_ENULLFNAME;
+
+        fname = fs_fname_from_path(path);
+
+        fat12_parse_fname(fname, dosfname);
+
+        strncpy(entry.fname, dosfname, 8);
+        strncpy(entry.ext, dosfname + 8, 3);
+        entry.size  = 0;
+        entry.flags = FAT12_DIRECTORY;
+
+        if (fat12_find(fat12, &file, path) == ION_EOK)
+                return ION_EEXIST;
+
+        entry.first_cluster = err = fat12_get_cluster(fat12, FAT12_O_MARKEND);
+        if (err == 0)
+                return ION_EDISKFULL;
+        else if (err < 0)
+                return err;
+
+        err = fat12_create_entry(fat12, &entry, path);
+        return err;
+}
+
+int fat12_delete_file(ion_fs *fat12, char *path)
+{
+        int      err, cluster, next_cluster;
+        ion_file file;
+
+        if (path == NULL)
+                return ION_ENULLFNAME;
+
+        err = fat12_find(fat12, &file, path);
+        if (err)
+                return err;
+
+        if (file.flags & ION_FS_DIR)
+                return ION_EEXPECTEDFILE;
+
+        cluster = file.first_cluster;
+        do {
+                err = next_cluster = fat12_next_cluster(fat12, cluster);
+                if (err < 0)
+                        return err;
+
+                fat12_mark_fat_entry(fat12, cluster, FAT12_FREECLUSTER);
+                cluster = next_cluster;
+        } while (cluster < 0xff8);
+
+        fat12_mark_fat_entry(fat12, cluster, FAT12_FREECLUSTER);
+
+        err = fat12_update_entry(&file, FAT12_O_FREEENTRY);
+        return err;
+}
+
+int fat12_delete_dir(ion_fs *fat12, char *path)
+{
+        int      err, cluster, next_cluster;
+        ion_file file;
+
+        if (path == NULL)
+                return ION_ENULLFNAME;
+
+        err = fat12_find(fat12, &file, path);
+        if (err)
+                return err;
+
+        if (file.flags & ION_FS_FILE)
+                return ION_EEXPECTEDDIR;
+
+        cluster = file.first_cluster;
+        do {
+                err = next_cluster = fat12_next_cluster(fat12, cluster);
+                if (err < 0)
+                        return err;
+
+                fat12_mark_fat_entry(fat12, cluster, FAT12_FREECLUSTER);
+                cluster = next_cluster;
+        } while (cluster < 0xff8);
+
+        fat12_mark_fat_entry(fat12, cluster, FAT12_FREECLUSTER);
+
+        err = fat12_update_entry(&file, FAT12_O_FREEENTRY);
+        return err;
+}
+
 int fat12_write(ion_file *file, void *buff, int count)
 {
-        extern struct txtmod_ctx global_ctx;
-        char                    *cluster;
-        int                      sector_index, curr, i;
-        int                      prev_cluster, next_cluster, current_cluster;
-        int                      pos_in_cluster, clusters_to_write;
-        int                      cluster_size, len;
-        fat12_mountinfo         *info;
-        ion_fs                  *fat12;
-        struct ion_error         err;
+        char            *cluster;
+        int              sector_index, curr, i;
+        int              prev_cluster, next_cluster, current_cluster;
+        int              pos_in_cluster, clusters_to_write;
+        int              cluster_size, len;
+        fat12_mountinfo *info;
+        ion_fs          *fat12;
+        struct ion_error err;
 
         if (file == NULL)
                 return ION_ENULLFILE;
@@ -1010,6 +1139,9 @@ int fat12_write(ion_file *file, void *buff, int count)
                 return ION_EDEVTOOBIG;
         if (filesystems[file->device] == NULL)
                 return ION_ENOFS;
+
+        if (file->flags & ION_FS_RDONLY)
+                return ION_EBADF;
 
         fat12 = filesystems[file->device];
         info  = (struct _fat12_mountinfo *)fat12->meta;
@@ -1022,14 +1154,6 @@ int fat12_write(ion_file *file, void *buff, int count)
         if (err.number)
                 goto cleanup;
 
-        global_ctx.color = 0x02;
-        txtmod_printf(
-                &global_ctx,
-                "Writing %d bytes to file %s: sector %x (%x, %x, %d) cluster %x\n",
-                count, file->name, sector_index, info->data_area_offset,
-                file->cluster, info->sectors_per_cluster, file->cluster);
-        global_ctx.color = 0x0f;
-
         curr            = 0;
         prev_cluster    = file->cluster;
         current_cluster = file->cluster;
@@ -1037,22 +1161,20 @@ int fat12_write(ion_file *file, void *buff, int count)
 
         sector_index = info->data_area_offset +
                        (prev_cluster - 2) * info->sectors_per_cluster;
-        trace(0x555);
-        trace(prev_cluster);
-        trace(sector_index);
 
         if (err.number = disk_load_sectors(&fat12->device, sector_index,
                                            info->sectors_per_cluster, cluster))
                 goto cleanup;
 
         if (pos_in_cluster + count < cluster_size) {
-                memcpy(cluster + pos_in_cluster, buff, count);
+                if (fat12_write_zero)
+                        memset(cluster + pos_in_cluster, 0, count);
+                else
+                        memcpy(cluster + pos_in_cluster, buff, count);
                 err.number = disk_store_sectors(&fat12->device, sector_index,
                                                 info->sectors_per_cluster,
                                                 cluster);
         } else {
-                txtmod_printf(&global_ctx, "Needed: %d, pos: %d, size: %d\n",
-                              count, pos_in_cluster, cluster_size);
                 // I have to write cluster_size - (pos_in_cluster) in loaded
                 // cluster,
                 // (pos_in_cluster+count) / cluster_size is the number of
@@ -1062,14 +1184,13 @@ int fat12_write(ion_file *file, void *buff, int count)
                 clusters_to_write +=
                         ((pos_in_cluster + count) % cluster_size) ? 1 : 0;
 
-                txtmod_printf(
-                        &global_ctx,
-                        "Clusters to write: %d. Writing %d bytes in loaded cluster\n",
-                        clusters_to_write, cluster_size - pos_in_cluster);
-
                 // In loaded cluster
-                memcpy(cluster + pos_in_cluster, buff,
-                       cluster_size - pos_in_cluster);
+                if (fat12_write_zero)
+                        memset(cluster + pos_in_cluster, 0,
+                               cluster_size - pos_in_cluster);
+                else
+                        memcpy(cluster + pos_in_cluster, buff,
+                               cluster_size - pos_in_cluster);
                 err.number = disk_store_sectors(&fat12->device, sector_index,
                                                 info->sectors_per_cluster,
                                                 cluster);
@@ -1080,7 +1201,6 @@ int fat12_write(ion_file *file, void *buff, int count)
                 curr = cluster_size - pos_in_cluster;
 
                 for (i = 0; i < clusters_to_write - 1; i++) {
-                        trace(0x696969);
                         next_cluster = fat12_next_or_alloc_cluster(
                                 fat12, prev_cluster);
                         if (next_cluster < 0) {
@@ -1091,15 +1211,18 @@ int fat12_write(ion_file *file, void *buff, int count)
                         sector_index =
                                 info->data_area_offset +
                                 (next_cluster - 2) * info->sectors_per_cluster;
-                        trace(0x556);
-                        trace(sector_index);
+
                         if (err.number = disk_load_sectors(
                                     &fat12->device, sector_index,
                                     info->sectors_per_cluster, cluster))
                                 goto cleanup;
 
                         prev_cluster = next_cluster;
-                        memcpy(cluster, buff + curr, cluster_size);
+
+                        if (fat12_write_zero)
+                                memset(cluster, 0, cluster_size);
+                        else
+                                memcpy(cluster, buff + curr, cluster_size);
                         curr += cluster_size;
                         err.number = disk_store_sectors(
                                 &fat12->device, sector_index,
@@ -1118,8 +1241,7 @@ int fat12_write(ion_file *file, void *buff, int count)
 
                 sector_index = info->data_area_offset +
                                (next_cluster - 2) * info->sectors_per_cluster;
-                trace(0x557);
-                trace(sector_index);
+
                 if (err.number = disk_load_sectors(&fat12->device, sector_index,
                                                    info->sectors_per_cluster,
                                                    cluster))
@@ -1127,11 +1249,11 @@ int fat12_write(ion_file *file, void *buff, int count)
 
                 // first: 90 (sz - pos), inter:
                 len = count - curr;
-                txtmod_printf(
-                        &global_ctx,
-                        "Writing %d (curr %d) bytes in the tail cluster [%x]\n",
-                        len, curr, next_cluster);
-                memcpy(cluster, buff + curr, len);
+
+                if (fat12_write_zero)
+                        memset(cluster, 0, len);
+                else
+                        memcpy(cluster, buff + curr, len);
                 curr += len;
                 err.number = disk_store_sectors(&fat12->device, sector_index,
                                                 info->sectors_per_cluster,
@@ -1147,8 +1269,50 @@ end:
         file->eof = file->pos > file->lenght;
         file->lenght += file->eof ? count : 0;
         file->cluster = current_cluster;
-        fat12_update_entry(file);
+        fat12_update_entry(file, FAT12_O_DEFAULT);
 cleanup:
         kfree(cluster);
         return err.number;
+}
+
+int fat12_rename(ion_fs *fat12, char *old, char *new)
+{
+        int         err;
+        char       *fname, dosfname[13];
+        static char sector[512];
+        fat12_entry oldentry;
+        ion_file    file;
+
+        if (old == NULL || new == NULL)
+                return ION_ENULLFNAME;
+
+        err = fat12_find(fat12, &file, new);
+        if (err == ION_EOK)
+                return ION_EEXIST;
+
+        err = fat12_find(fat12, &file, old);
+        if (err)
+                return err;
+
+        err = disk_load_sector(&fat12->device, file.entry_block, sector);
+        if (err)
+                return err;
+
+        fat12_parse_entry(&oldentry, sector + file.entry_offset);
+
+        sector[file.entry_offset] = 0xe5;
+        err = disk_store_sector(&fat12->device, file.entry_block, sector);
+        if (err)
+                return err;
+
+        fname = fs_fname_from_path(new);
+        fat12_parse_fname(fname, dosfname);
+        strncpy(oldentry.fname, dosfname, 8);
+        strncpy(oldentry.ext, dosfname + 8, 3);
+        err = fat12_create_entry(fat12, &oldentry, new);
+
+        if (err)
+                return err;
+
+        return ION_EOK;
 }
