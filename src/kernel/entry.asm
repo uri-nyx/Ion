@@ -94,6 +94,7 @@ Craise:
     call Cbios_puts
     ret
 
+C__CALLRET: #d32 0
 C__call:
     push    fp, sp
     mv      fp, sp
@@ -104,8 +105,26 @@ C__call:
     jalr    ra, 0(a0)
     pop     ra, sp
     trace   t0, a0, zero, zero 
+    ssw     a0, C__CALLRET, t0
     pop     fp, sp
     ret
+
+C__FLOAT: #d32 0
+C__floats:
+        addi r2,r2,-32
+        sw  r8,28(r2)
+        addi  r8,r2,16
+        la r30,.l2
+        lw r30,0(r30)
+        sw r30,-8+16(r8)
+        lw r10,-8+16(r8)
+.l1:
+        lw  r8,28(r2)
+        ssw r8, C__FLOAT, t0
+        addi  r2,r2,32
+        jalr r0,0(r1)
+.l2:
+        #d32   0x42cc0000
 
 Cloader_user_exec:
     push    fp, sp

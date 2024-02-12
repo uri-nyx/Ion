@@ -144,5 +144,7 @@ extern void _interrupt_enable(void);
 extern void _interrupt_disable(void);
 
 extern void __call(int addr);
+extern int *__CALLRET;
+extern int __FLOAT;
 
 #endif /* HW_H */

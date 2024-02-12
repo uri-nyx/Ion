@@ -67,7 +67,7 @@ void kmain(void)
 {
         int err, header[10], i, *p;
         int (*prg)();
-        char           *s, c;
+        char           *s, c, buff[100];
         struct disk     TpsA, TpsB;
         struct ion_time now;
         ion_fs          fat12, fat12B;
@@ -124,6 +124,26 @@ void kmain(void)
         fs_register_fs(&fat12, 0);
         fs_register_fs(&fat12B, 1);
 
+
+        fs_open_file(&file, "b:a.out", ION_FS_O_RDONLY);
+        fs_read_file(&file, buff, 99);
+        __call((int)(buff + 0x20));
+        txtmod_puts(&global_ctx, "A.OUT SAYS:\n");
+        txtmod_puts(&global_ctx, (char*)__CALLRET);
+
+        fs_close_file(&file);
+        memset(buff, 0, 100);
+
+        fs_open_file(&file, "b:a.bin", ION_FS_O_RDONLY);
+        fs_read_file(&file, buff, 99);
+        __call((int)(buff));
+        txtmod_puts(&global_ctx, "\nA.BIN SAYS:\n");
+        txtmod_puts(&global_ctx, (char*)__CALLRET);
+
+        __floats();
+        txtmod_printf(&global_ctx, "Floats! this shoud be equal to 100.0+2.0 %p", __FLOAT);
+
+g: goto g;
         multitasking_init(&kernel_task);
         subtask   = create_task("STASK", (void *)0xe50000, another_task);
         task3     = create_task("TASK3", (void *)0xe4d000, yet_another);
