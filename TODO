@@ -35,3 +35,4 @@ Kernel:
                         - exit
                 - libc
                 - FILE API and file descriptors
+                - PANIC

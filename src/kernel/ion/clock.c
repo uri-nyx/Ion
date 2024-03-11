@@ -1,5 +1,6 @@
-#include "include/ion/clock.h"
-#include "include/drivers/hw.h"
+#include <drivers/hw.h>
+#include <ion.h>
+#include <ion/clock.h>
 
 #define SYS_DEV 0XF0
 
@@ -13,38 +14,36 @@ enum { YEAR = 0xf4, MONTH, DAY, HOUR, MINUTE, SECOND, MILLIS };
 
 void clock_gettime(struct ion_time *now)
 {
-        now->year   = lbud(YEAR);
-        now->month  = lbud(MONTH);
-        now->day    = lbud(DAY);
-        now->hour   = lbud(HOUR);
-        now->minute = lbud(MINUTE);
-        now->second = lbud(SECOND);
-        now->ms     = lbud(MILLIS);
+        now->year   = hw_lbud(YEAR);
+        now->month  = hw_lbud(MONTH);
+        now->day    = hw_lbud(DAY);
+        now->hour   = hw_lbud(HOUR);
+        now->minute = hw_lbud(MINUTE);
+        now->second = hw_lbud(SECOND);
+        now->ms     = hw_lbud(MILLIS);
 }
 
-int clock_unix_time(void)
+u32 clock_unix_time(void)
 {
-        int time;
+        u32 time;
 
-        sbd(0, YEAR); // swicth to epoch mode
-        time = lbud(YEAR) << 24;
-        time |= lbud(MONTH) << 16;
-        time |= lbud(DAY) << 8;
-        time |= lbud(HOUR);
-        sbd(0, YEAR); // swicth to date mode
+        hw_sbd(0, YEAR); /* swicth to epoch mode */
+        time = hw_lbud(YEAR) << 24;
+        time |= hw_lbud(MONTH) << 16;
+        time |= hw_lbud(DAY) << 8;
+        time |= hw_lbud(HOUR);
+        hw_sbd(0, YEAR); /* swicth to date mode */
 
         return time;
 }
 
-int clock_read_counter(void)
+u32 clock_read_counter(void)
 {
-        int count;
-        sbd(0, MINUTE);
-        count = lbud(MINUTE) << 24;
-        count |= lbud(SECOND) << 16;
-        count |= lbud(MILLIS) << 8;
-        count |= lbud(MILLIS + 1);
+        u32 count;
+        hw_sbd(0, MINUTE);
+        count = hw_lbud(MINUTE) << 24;
+        count |= hw_lbud(SECOND) << 16;
+        count |= hw_lbud(MILLIS) << 8;
+        count |= hw_lbud(MILLIS + 1);
         return count;
 }
-
-

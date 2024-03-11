@@ -1,13 +1,46 @@
-UTIL=utils
-AS=customasm $(UTIL)/asm/master.asm $(UTIL)/asm/sys.asm CONFIG.asm
-LD=python3 $(UTIL)/link.py
-SCCDIR=$(UTIL)/scc
-SCC=$(SCCDIR)/cc
-SCCFLAGS= -Sv
-LIBS= $(SCCDIR)/lib
-SECTIONALIGN=4096
-SRC=src
-BUILD=build
+BINUTILS=lcc-sirius/binutils/bin
+
+LD=$(BINUTILS)/ld
+AS=$(BINUTILS)/as
+
+LIBS= $(LCCDIR)/lib
+LCCDIR=lcc-sirius/lcc/bin
+
+CC=$(LCCDIR)/lcc
+CPP=$(LCCDIR)/ucpp
+CFLAGS=-A -A -N
+
+TARGET_EXEC := kernel.bin
+
+BUILD_DIR := ./build
+SRC_DIRS := ./src/kernel
+
+# Find all the C files we want to compile
+# Note the single quotes around the * expressions. The shell will incorrectly 
+# expand these otherwise, but we want to send the * directly to the find command.
+SRCS := $(shell find $(SRC_DIRS) -name '*.c' -or -name '*.asm')
+ENTRY := ./src/kernel/entry.s
+LAST := ./src/kernel/kstack.s
+
+
+# Prepends BUILD_DIR and appends .o to every src file
+# As an example, ./your_dir/hello.c turns into ./build/./your_dir/hello.c.o
+OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
+
+# String substitution (suffix version without %).
+# As an example, ./build/hello.c.o turns into ./build/hello.c.d
+DEPS := $(OBJS:.o=.d)
+
+# Every folder in ./src will need to be passed to LCC so that it can find header files
+INC_DIRS := $(shell find $(SRC_DIRS) -type d)
+# Add a prefix to INC_DIRS. So moduleA would become -ImoduleA. LCC understands this -I flag
+INC_FLAGS := -I./src/libk/include $(addprefix -I,$(INC_DIRS))
+
+# The -M and -Ma flags together generate Makefiles for us!
+# These files will have .d instead of .o as the output.
+CPPFLAGS := -zI $(INC_FLAGS) -M -Ma
+LDFLAGS= -h -m map.txt -rc 16572416 -l src/libk/build/libk.a
+
 
 all: clean tps_image load run
 
@@ -17,90 +50,70 @@ run: load
 
 # Load into tps
 load: tps_image
-	cp $(BUILD)/ion.img emu/dev/tps/A
+	cp $(BUILD_DIR)/ion.img emu/dev/tps/A
 
 # TPS image (FAT12)
-tps_image: $(BUILD)/ion.img
-$(BUILD)/ion.img: bootloader kernel
-	dd if=/dev/zero of=$(BUILD)/ion.img bs=512 count=256
-	mkfs.fat -F 12 -n "ION SYSTEM" $(BUILD)/ion.img
-	dd if=$(BUILD)/bootloader.bin of=$(BUILD)/ion.img conv=notrunc
-	mcopy -i $(BUILD)/ion.img $(BUILD)/kernel.bin "::kernel.bin"
+tps_image: $(BUILD_DIR)/ion.img
+$(BUILD_DIR)/ion.img: bootloader kernel
+	dd if=/dev/zero of=$(BUILD_DIR)/ion.img bs=512 count=256
+	mkfs.fat -F 12 -n "ION SYSTEM" $(BUILD_DIR)/ion.img
+	dd if=$(BUILD_DIR)/bootloader.bin of=$(BUILD_DIR)/ion.img conv=notrunc
+	mcopy -i $(BUILD_DIR)/ion.img $(BUILD_DIR)/kernel.bin "::kernel.bin"
 
-# Bootloader
-bootloader: $(BUILD)/bootloader.bin
-$(BUILD)/bootloader.bin:
-	$(AS) $(SRC)/bootloader/boot.s -f binary -o $(BUILD)/bootloader.bin
+# Bootloader TODO: C preprocessor on assembler?
+bootloader: $(BUILD_DIR)/bootloader.bin
+# TODO: write bootloader for AS
+$(BUILD_DIR)/bootloader.bin:
+	cp ./src/bootloader/bin/bootloader.bin $(BUILD_DIR)/bootloader.bin:
 
-# Kernel
-kernel: $(BUILD)/kernel.bin
-$(BUILD)/kernel.bin: $(SRC)/kernel/kernel.asm $(SRC)/kernel/entry.asm
-	$(LD) $(SECTIONALIGN) $(SRC)/kernel/entry.asm $(SRC)/kernel/system/int.asm \
-	$(SRC)/kernel/drivers/timer.asm $(SRC)/kernel/drivers/kb.asm \
-	$(SRC)/kernel/kernel.asm $(SRC)/kernel/ion/txtmod.asm $(SRC)/kernel/system/paging.asm \
-	$(SRC)/kernel/drivers/disk.asm $(SRC)/kernel/system/task.asm $(LIBS)/libk.asm
-	$(AS) linker.out -pf symbols | grep '^__text_size\|^__data_size\|^__data_start\|^__bss_size\|^__bss_start' | cat - $(SRC)/kernel/linker.ln > link.s
-	sed -i -E '/__text_size|__data_size|__data_start|__bss_size|__bss_start/d' linker.out
-	sed -i 's/;bank/#bank/g' linker.out
-	sed -i '/#align $(SECTIONALIGN)/d' linker.out
-	$(AS) link.s linker.out -f binary -o $(BUILD)/kernel.bin
-	$(AS) link.s linker.out -f symbols -o $(BUILD)/kernel.sym
-	grep -Ff public.sym $(BUILD)/kernel.sym > $(BUILD)/k.sym
-	rm public.sym
-	rm $(BUILD)/kernel.sym
-	rm link.s
-	rm linker.out
+# The final build step.
+kernel: $(BUILD_DIR)/$(TARGET_EXEC)
+$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
+	$(AS) -o $(BUILD_DIR)/entry.o $(ENTRY) 
+	$(AS) -o $(BUILD_DIR)/last.o $(LAST) 
+	$(LD) $(LDFLAGS) -o $@ $(BUILD_DIR)/entry.o $(OBJS) $(BUILD_DIR)/last.o
 
-symbols: $(SRC)/kernel/kernel.asm $(SRC)/kernel/entry.asm
-	$(LD) $(SECTIONALIGN) $(SRC)/kernel/entry.asm $(SRC)/kernel/system/int.asm \
-	$(SRC)/kernel/drivers/timer.asm $(SRC)/kernel/drivers/kb.asm \
-	$(SRC)/kernel/kernel.asm $(SRC)/kernel/ion/txtmod.asm $(SRC)/kernel/system/paging.asm \
-	$(SRC)/kernel/drivers/disk.asm $(SRC)/kernel/system/task.asm $(LIBS)/libk.asm
-	$(AS) linker.out -pf symbols
+run-forth: cforth
+	cp $(BUILD_DIR)/forth.bin emu
+	cd emu && ./TaleaZ -f forth.bin -z 15 --scale=4
 
-ION=$(shell cd $(SRC)/kernel && ls ion/*.c)
-SYS=$(shell cd $(SRC)/kernel && ls system/*.c)
-DEV=$(shell cd $(SRC)/kernel && ls drivers/*.c)
-IONSRC=$(wildcard $(SRC)/kernel/ion/*.c)
-IONOBJ=$(shell ls $(SRC)/kernel/ion/*.c | sed 's/.c$$/.s/g')
-SYSSRC=$(wildcard $(SRC)/kernel/system/*.c)
-SYSOBJ=$(shell ls $(SRC)/kernel/system/*.c | sed 's/.c$$/.s/g')
-DRIVSRC=$(wildcard $(SRC)/kernel/drivers/*.c)
-DRIVOBJ=$(shell ls $(SRC)/kernel/drivers/*.c | sed 's/.c$$/.s/g')
-LKOBJS=$(SRC)/kernel/main.s $(SRC)/kernel/ion.s $(SRC)/kernel/system.s \
-	$(SRC)/kernel/drivers.s
+cforth: $(BUILD_DIR)/forth.bin
+$(BUILD_DIR)/forth.bin: cforth/forth.o cforth/terminal.o cforth/bios.o cforth/disk.o 
+	$(LD) -h -m fort.txt -o $@  cforth/bios.o cforth/terminal.o cforth/forth.o cforth/disk.o 
 
-$(SRC)/kernel/kernel.asm: $(LKOBJS)
-	rm -f $(SRC)/kernel/kernel.asm
-	cat $(LKOBJS) > $(SRC)/kernel/kernel.asm
+cforth/forth.o: cforth/forth.c
+	$(CC) -N -c $< -o $@
 
-$(SRC)/kernel/ion.s: $(IONOBJ)
-	cat $(IONOBJ) | awk '{ gsub(/L[0-9]+/, "&ION") }1' > $(SRC)/kernel/ion.s
+cforth/terminal.o: cforth/terminal.c
+	$(CC) -N -c $< -o $@
 
-$(SRC)/kernel/system.s: $(SYSOBJ)
-	cat $(SYSOBJ) | awk '{ gsub(/L[0-9]+/, "&SYS") }1' > $(SRC)/kernel/system.s
+cforth/bios.o: cforth/bios.s 
+	$(AS) -o $@ $<
 
-$(SRC)/kernel/drivers.s: $(DRIVOBJ)
-	cat $(DRIVOBJ) | awk '{ gsub(/L[0-9]+/, "&DEV") }1' > $(SRC)/kernel/drivers.s
+cforth/disk.o: cforth/disk.s
+	$(AS) -o $@ $<
 
-$(IONOBJ): $(IONSRC)
-	cd $(SRC)/kernel && ../../$(SCC) $(SCCFLAGS) $(ION)
+libk:
+	cd src/libk && make 
 
-$(SYSOBJ): $(SYSSRC)
-	cd $(SRC)/kernel && ../../$(SCC) $(SCCFLAGS) $(SYS)
+# Build step for C source
+$(BUILD_DIR)/%.c.o: %.c
+	mkdir -p $(dir $@)
+	$(CPP) $(CPPFLAGS) $< -o $<.d
+	$(CC) $(INC_FLAGS) $(CFLAGS) -c $< -o $@
 
-$(DRIVOBJ): $(DRIVSRC)
-	cd $(SRC)/kernel && ../../$(SCC) $(SCCFLAGS) $(DEV)
+# Build step for assembly source
+$(BUILD_DIR)/%.asm.o: %.asm
+	mkdir -p $(dir $@)
+	$(CC) $(INC_FLAGS) $(CFLAGS) -c $< -o $@
 
-$(SRC)/kernel/main.s: $(SRC)/kernel/main.c
-	cd $(SRC)/kernel/ && ../../$(SCC) $(SCCFLAGS) main.c
-# lib
-lib:
-	cd $(SCCDIR) && make clean && make
 
+.PHONY: clean
 clean:
-	rm -rf $(BUILD)/*
-	rm -rf $(SRC)/*/*.o
-	rm -rf $(LKOBJS)
-	rm -rf $(IONOBJ) $(SYSOBJ) $(DRIVOBJ)
-	rm -rf $(SRC)/kernel/kernel.asm
+	rm -r src/**/*.d
+	rm -r $(BUILD_DIR)
+
+# Include the .d makefiles. The - at the front suppresses the errors of missing
+# Makefiles. Initially, all the .d files will be missing, and we don't want those
+# errors to show up.
+-include $(DEPS)
