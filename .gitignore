@@ -5,18 +5,21 @@
 /utils/scc
 /venv
 /build/*
+src/libk/src/lib/libscc
 ### macOS ###
 # General
 .DS_Store
 .AppleDouble
 .LSOverride
-.s
-.o
-.out
-.bin
+
+*.o
+*.out
+*.bin
+*.d
 # Icon must end with two \r
 Icon
-
+coredump
+coredump_*
 
 # Thumbnails
 ._*

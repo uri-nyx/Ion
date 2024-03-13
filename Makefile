@@ -75,22 +75,24 @@ $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 
 run-forth: cforth
 	cp $(BUILD_DIR)/forth.bin emu
-	cd emu && ./TaleaZ -f forth.bin -z 15 --scale=4
+	cp cforth/forth_system.img emu/dev/tps/A
+	cd emu && ./TaleaZ -f forth.bin -z 7 --scale=4
+	cp emu/dev/tps/A cforth/forth_system.img
 
 cforth: $(BUILD_DIR)/forth.bin
-$(BUILD_DIR)/forth.bin: cforth/forth.o cforth/terminal.o cforth/bios.o cforth/disk.o 
-	$(LD) -h -m fort.txt -o $@  cforth/bios.o cforth/terminal.o cforth/forth.o cforth/disk.o 
+$(BUILD_DIR)/forth.bin: $(BUILD_DIR)/forth.o $(BUILD_DIR)/terminal.o $(BUILD_DIR)/bios.o $(BUILD_DIR)/disk.o 
+	$(LD) -h -o $@  $(BUILD_DIR)/bios.o $(BUILD_DIR)/terminal.o $(BUILD_DIR)/forth.o $(BUILD_DIR)/disk.o 
 
-cforth/forth.o: cforth/forth.c
+$(BUILD_DIR)/forth.o: cforth/forth.c
 	$(CC) -N -c $< -o $@
 
-cforth/terminal.o: cforth/terminal.c
+$(BUILD_DIR)/terminal.o: cforth/terminal.c
 	$(CC) -N -c $< -o $@
 
-cforth/bios.o: cforth/bios.s 
+$(BUILD_DIR)/bios.o: cforth/bios.s 
 	$(AS) -o $@ $<
 
-cforth/disk.o: cforth/disk.s
+$(BUILD_DIR)/disk.o: cforth/disk.s
 	$(AS) -o $@ $<
 
 libk:

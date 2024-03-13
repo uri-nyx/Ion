@@ -15,53 +15,7 @@
  *
  *******************************************************************************/
 
-/* Only a single include here; I'll define everything on the fly to keep
- * dependencies as low as possible. In this file, the only C standard functions
- * used are getchar, putchar and the EOF value. */
-/* #include <stdio.h> */
-
-#define EOF (-1)
-
-/* Allows access to all of the memory. Requires supervisor privilege */
-#define TOTAL_MEMORY_ACCESS 1
-
-/* Base cell data types. Use short/long on most systems for 16 bit cells. */
-/* Experiment here if necessary. */
-#define CELL_BASE_TYPE        short
-#define DOUBLE_CELL_BASE_TYPE long
-#define LN                    '\r'
-
-/* Basic memory configuration */
-#define MEM_SIZE        65536 /* main memory size in bytes */
-#define STACK_SIZE      192 /* cells reserved for the stack */
-#define RSTACK_SIZE     64 /* cells reserved for the return stack */
-#define INPUT_LINE_SIZE 300 /* bytes reserved for the WORD buffer */
-
-/******************************************************************************/
-
-/* Our basic data types */
-typedef CELL_BASE_TYPE                 scell;
-typedef DOUBLE_CELL_BASE_TYPE          dscell;
-typedef unsigned CELL_BASE_TYPE        cell;
-typedef unsigned DOUBLE_CELL_BASE_TYPE dcell;
-typedef unsigned char                  byte;
-#define CELL_SIZE  sizeof(cell)
-#define DCELL_SIZE sizeof(dcell)
-
-/* A few constants that describe the memory layout of this implementation */
-#define LATEST_POSITION INPUT_LINE_SIZE
-#define HERE_POSITION   (LATEST_POSITION + CELL_SIZE)
-#define BASE_POSITION   (HERE_POSITION + CELL_SIZE)
-#define STATE_POSITION  (BASE_POSITION + CELL_SIZE)
-#define STACK_POSITION  (STATE_POSITION + CELL_SIZE)
-#define RSTACK_POSITION (STACK_POSITION + STACK_SIZE * CELL_SIZE)
-#define HERE_START      (RSTACK_POSITION + RSTACK_SIZE * CELL_SIZE)
-#define MAX_BUILTIN_ID  95
-
-/* Flags and masks for the dictionary */
-#define FLAG_IMMEDIATE  0x80
-#define FLAG_HIDDEN     0x40
-#define MASK_NAMELENGTH 0x1F
+#include "sys.h"
 
 /* This is the main memory to be used by this Forth. There will be no malloc
  * in this file. */
@@ -76,10 +30,12 @@ cell *sp;
 cell *stack;
 cell *rsp;
 cell *rstack;
+cell *sbuf;
 
 /* A few helper variables for the compiler */
 int  exitReq;
 int  errorFlag;
+int  supress_ok = 0;
 cell next;
 cell lastIp;
 cell quit_address;
@@ -87,10 +43,9 @@ cell commandAddress;
 cell maxBuiltinAddress;
 
 /* The TIB, stored outside the main memory array for now */
-char       lineBuffer[128];
-int        charsInLineBuffer    = 0;
-int        positionInLineBuffer = 0;
-extern int scroll_lock;
+char lineBuffer[128];
+int  charsInLineBuffer    = 0;
+int  positionInLineBuffer = 0;
 
 /* A basic setup for defining builtins. This Forth uses impossibly low
  * adresses as IDs for the builtins so we can define builtins as
@@ -105,182 +60,22 @@ extern int scroll_lock;
 typedef void (*builtin)();
 builtin builtins[MAX_BUILTIN_ID] = { 0 };
 
-void           semicolon();
-unsigned short hw_lhud(unsigned short address);
-byte           hw_lbud(unsigned short address);
-void           hw_shd(unsigned short address, unsigned short value);
-void           hw_sbd(unsigned short address, byte value);
-void           hw_call(unsigned long address);
-
-#define HCS_SECTOR_SIZE 512
-#define HCS_NSECTORS    65535
-#define TPS_SECTOR_SIZE 512
-#define TPS_NSECTORS    256
-
-extern void hcs_load_driver(cell dev, cell sector, void *buff);
-extern void hcs_store_driver(cell dev, cell sector, void *buff);
-extern void tps_load_driver(cell dev, byte sector, void *buff);
-extern void tps_store_driver(cell dev, byte sector, void *buff);
-
 /* This is our initialization script containing all the words we define in
  * Forth for convenience. Focus is on simplicity, not speed. Partly copied from
  * Jonesforth (see top of file). */
 char       *initscript_pos;
 const char *initScript =
-        ": DECIMAL 10 BASE ! ;\r"
-        ": HEX 16 BASE ! ;\r"
-        ": OCTAL 8 BASE ! ;\r"
-        ": 2DUP OVER OVER ;\r"
-        ": 2DROP DROP DROP ;\r"
-        ": NIP SWAP DROP ;\r"
-        ": 2NIP 2SWAP 2DROP ;\r"
-        ": TUCK SWAP OVER ;\r"
-        ": / /MOD NIP ;\r"
-        ": U/ U/MOD NIP ;\r"
-        ": MOD /MOD DROP ;\r"
-        ": UMOD U/MOD DROP ;\r"
-        ": BL 32 ;\r"
-        ": CR 10 EMIT ;\r"
-        ": SPACE BL EMIT ;\r"
-        ": INVERT NOT ;\r"
-        ": NEGATE 0 SWAP - ;\r"
-        ": DNEGATE 0. 2SWAP D- ;\r"
-        ": CELLS CELL * ;\r"
-        ": ALLOT HERE @ + HERE ! ;\r"
-        ": TRUE -1 ;\r"
-        ": FALSE 0 ;\r"
-        ": 0= 0 = ;\r"
-        ": 0< 0 < ;\r"
-        ": 0> 0 > ;\r"
-        ": <> = 0= ;\r"
-        ": <= > 0= ;\r"
-        ": >= < 0= ;\r"
-        ": 0<= 0 <= ;\r"
-        ": 0>= 0 >= ;\r"
-        ": 1+ 1 + ;\r"
-        ": 1- 1 - ;\r"
-        ": 2+ 2 + ;\r"
-        ": 2- 2 - ;\r"
-        ": 2/ 2 / ;\r"
-        ": 2* 2 * ;\r"
-        ": D2/ 2. D/ ;\r"
-        ": +! DUP @ ROT + SWAP ! ;\r"
-        ": [COMPILE] WORD FIND >CFA , ; IMMEDIATE\r"
-        ": [CHAR] key ' LIT , , ; IMMEDIATE\r"
-        ": RECURSE LATEST @ >CFA , ; IMMEDIATE\r"
-        ": DOCOL 0 ;\r"
-        ": CONSTANT CREATE DOCOL , ' LIT , , ' EXIT , ;\r"
-        ": 2CONSTANT SWAP CREATE DOCOL , ' LIT , , ' LIT , , ' EXIT , ;\r"
-        ": VARIABLE CREATE DOCOL , ' LIT , HERE @ 2 CELLS + , ' EXIT , CELL ALLOT ;\r"
-        ": 2VARIABLE CREATE DOCOL , ' LIT , HERE @ 2 CELLS + , ' EXIT , 2 CELLS ALLOT ;\r"
-        ": IF ' 0BRANCH , HERE @ 0 , ; IMMEDIATE\r"
-        ": THEN DUP HERE @ SWAP - SWAP ! ; IMMEDIATE\r"
-        ": ELSE ' BRANCH , HERE @ 0 , SWAP DUP HERE @ SWAP - SWAP ! ; IMMEDIATE\r"
-        ": BEGIN HERE @ ; IMMEDIATE\r"
-        ": UNTIL ' 0BRANCH , HERE @ - , ; IMMEDIATE\r"
-        ": AGAIN ' BRANCH , HERE @ - , ; IMMEDIATE\r"
-        ": WHILE ' 0BRANCH , HERE @ 0 , ; IMMEDIATE\r"
-        ": REPEAT ' BRANCH , SWAP HERE @ - , DUP HERE @ SWAP - SWAP ! ; IMMEDIATE\r"
-        ": UNLESS ' 0= , [COMPILE] IF ; IMMEDIATE\r"
-        ": DO HERE @ ' SWAP , ' >R , ' >R , ; IMMEDIATE\r"
-        ": LOOP ' R> , ' R> , ' SWAP , ' 1+ , ' 2DUP , ' = , ' 0BRANCH , HERE @ - , ' 2DROP , ; IMMEDIATE\r"
-        ": +LOOP ' R> , ' R> , ' SWAP , ' ROT , ' + , ' 2DUP , ' <= , ' 0BRANCH , HERE @ - , ' 2DROP , ; IMMEDIATE\r"
-        ": I ' R@ , ; IMMEDIATE\r"
-        ": SPACES DUP 0> IF 0 DO SPACE LOOP ELSE DROP THEN ;\r"
-        ": ZEROS DUP 0> IF 0 DO 48 EMIT LOOP ELSE DROP THEN ;\r"
-        ": ABS DUP 0< IF NEGATE THEN ;\r"
-        ": DABS 2DUP 0. D< IF DNEGATE THEN ;\r"
-        ": .DIGIT DUP 9 > IF 55 ELSE 48 THEN + EMIT ;\r"
-        ": .SIGN DUP 0< IF 45 EMIT NEGATE THEN ;\r" /* BUG: 10000000000... will
-                                                       be shown wrong */
-        ": .POS BASE @ /MOD ?DUP IF RECURSE THEN .DIGIT ;\r"
-        ": . .SIGN DUP IF .POS ELSE .DIGIT THEN ;\r"
-        ": U. BASE @ U/MOD ?DUP IF RECURSE THEN DUP 10 < IF 48 ELSE 10 - 65 THEN + EMIT ;\r"
-        ": COUNTPOS SWAP 1 + SWAP BASE @ / ?DUP IF RECURSE THEN ;\r"
-        ": UCOUNTPOS SWAP 1 + SWAP BASE @ U/ ?DUP IF RECURSE THEN ;\r"
-        ": DIGITS DUP 0< IF NEGATE 1 ELSE 0 THEN SWAP COUNTPOS ;\r"
-        ": UDIGITS 0 SWAP UCOUNTPOS ;\r"
-        ": .R OVER DIGITS - SPACES . ;\r"
-        ": .RZ OVER DIGITS - ZEROS . ;\r"
-        ": U.R OVER UDIGITS - SPACES U. ;\r"
-        ": U.RZ OVER UDIGITS - ZEROS U. ;\r"
-        ": . . SPACE ;\r"
-        ": U. U. SPACE ;\r"
-        ": ? @ . ;\r"
-        ": WITHIN OVER - >R - R> U< ;\r"
-        ": DEPTH DSP@ S0@ - ;\r"
-        ": .S DSP@ BEGIN DUP S0@ > WHILE DUP ? CELL - REPEAT DROP ;\r"
-        ": TYPE 0 DO DUP C@ EMIT 1 + LOOP DROP ;\r"
-        ": ALIGNED 1 + 1 INVERT AND ;\r"
-        ": DALIGNED 3 + 3 INVERT AND ;\r"
-        ": ALIGN HERE @ ALIGNED HERE ! ;\r"
-        ": DALIGN HERE @ DALIGNED HERE ! ;\r"
-        ": COMPILE-STR ' LITSTRING , HERE @ 0 , BEGIN KEY DUP 34 <> WHILE C, REPEAT DROP DUP HERE @ SWAP - CELL - SWAP ! ALIGN ; \r"
-        ": INTERPRET-STR HERE @ BEGIN KEY DUP 34 <> WHILE OVER C! 1+ REPEAT DROP HERE @ - HERE @ SWAP ; \r"
-        ": s\" STATE @ IF COMPILE-STR ELSE INTERPRET-STR THEN ; IMMEDIATE\r"
-        ": .\" STATE @ IF [COMPILE] s\" ' TYPE , ELSE BEGIN KEY DUP 34 = IF DROP EXIT THEN EMIT AGAIN THEN ; IMMEDIATE\r"
-        ": ( BEGIN KEY [CHAR] ) = UNTIL ; IMMEDIATE\r"
-        ": COUNT DUP 1+ SWAP C@ ;\r"
-        ": MIN 2DUP < IF DROP ELSE NIP THEN ;\r"
-        ": MAX 2DUP > IF DROP ELSE NIP THEN ;\r"
-        ": D0= OR 0= ;\r"
-        ": DMIN 2OVER 2OVER D< IF 2DROP ELSE 2NIP THEN ;\r"
-        ": DMAX 2OVER 2OVER D> IF 2DROP ELSE 2NIP THEN ;\r \n";
+#include "initscript.h"
+        "\n";
 
 const char *initScript2 =
-        ": ID. 2 + DUP C@ 31 AND BEGIN DUP 0> WHILE SWAP 1 + DUP C@ EMIT SWAP 1 - REPEAT 2DROP ;\r"
-        ": ?HIDDEN 2 + C@ 64 AND ;\r"
-        ": ?IMMEDIATE 2 + C@ 128 AND ;\r"
-        ": WORDS LATEST @ BEGIN ?DUP WHILE DUP ?HIDDEN NOT IF DUP ID. SPACE THEN @ REPEAT CR ;\r"
-        ": FORGET WORD FIND DUP @ LATEST ! HERE ! ;\r"
-        ": DUMP-WORDS 2DUP 1 - 15 AND 1 + BEGIN ?DUP WHILE SWAP DUP C@ 2 U.RZ SPACE 1 + SWAP 1 - REPEAT DROP ;\r"
-        ": ASCII-LOOP BEGIN ?DUP WHILE SWAP DUP C@ DUP 32 128 WITHIN IF EMIT ELSE DROP 46 EMIT THEN 1 + SWAP 1 - REPEAT ; \r"
-        ": DUMP-ASCII 2DUP 1 - 15 AND 1 + ASCII-LOOP DROP ;\r"
-        ": DUMP-TAIL DUP 1 - 15 AND 1 + TUCK - >R + R> ; \r"
-        ": HEXUD. HEX SWAP DUP 0= IF DROP ELSE U. 8 EMIT THEN DUP UDIGITS 4 SWAP - DUP 0> IF 0 DO 30 EMIT LOOP ELSE DROP THEN U. ; \r"
-        ": HEXUDIGITS SWAP DUP 0= IF DROP UDIGITS ELSE UDIGITS 4 + NIP THEN ; \r"
-        ": HEXUD.R HEX -ROT 2DUP HEXUDIGITS >R ROT R> - SPACES HEXUD. 8 EMIT ;\r"
-        ": DUMP BASE @ -ROT HEX BEGIN ?DUP WHILE OVER 4 U.R 58 EMIT SPACE DUMP-WORDS DUMP-ASCII CR DUMP-TAIL REPEAT DROP BASE ! ;\r"
-        ": ?2DUP 2DUP D0= IF ELSE 2DUP THEN ;\r"
-        ": D! TUCK ! CELL + ! ;\r"
-        ": D@ DUP CELL + @ SWAP @ ;\r"
-        " 2VARIABLE SDUMP-ADDR \r"
-        " 2VARIABLE SDUMP-ADDR2 \r"
-        " VARIABLE RBASE \r"
-        ": SDUMP-ADDRLINE SDUMP-ADDR D@ 6 HEXUD.R 58 EMIT SPACE DUP 1 - 15 AND 1+ ;\r"
-        ": SASCII-EMIT DUP 32 128 WITHIN IF EMIT ELSE DROP 46 EMIT THEN ; \r"
-        ": SASCII-LOOP BEGIN ?DUP WHILE SDUMP-ADDR2 D@ 2DUP SYSC@ SASCII-EMIT 1. D+ SDUMP-ADDR2 D! 1- REPEAT ; \r"
-        ": SDUMP-BYTES BEGIN ?DUP WHILE SDUMP-ADDR D@ 2DUP SYSC@ 2 U.RZ SPACE 1. D+ SDUMP-ADDR D! 1- REPEAT ; \r"
-        ": SDUMP-ASCII DUP 1 - 15 AND 1 + SASCII-LOOP ;\r"
-        ": SDUMP-TAIL DUP 1 - 15 AND 1 + TUCK - >R + R> ; \r"
-        ": SDUMP-PRELUDE  >R 2DUP SDUMP-ADDR D! SDUMP-ADDR2 D! R> BASE @ RBASE ! HEX ; \r"
-        ": SDUMP SDUMP-PRELUDE BEGIN ?DUP WHILE SDUMP-ADDRLINE SDUMP-BYTES SDUMP-ASCII CR DUP 1- 15 AND 1+ -  REPEAT RBASE @ BASE ! ; \r"
-        ": ALIGNED16 15 + 15 INVERT AND ;\r"
-        ": SDUMP ALIGNED16 SDUMP ; \r"
-        ": DUMP ALIGNED16 DUMP ; \r"
-        ": CASE 0 ; IMMEDIATE \r"
-        ": OF ' OVER , ' = , [COMPILE] IF ' DROP , ; IMMEDIATE \r"
-        ": ENDOF [COMPILE] ELSE ; IMMEDIATE \r"
-        ": ENDCASE ' DROP , BEGIN ?DUP WHILE [COMPILE] THEN REPEAT ; IMMEDIATE \r"
-        ": CFA> LATEST @ BEGIN ?DUP WHILE 2DUP SWAP < IF NIP EXIT THEN @ REPEAT DROP 0 ; \r"
-        ": SHUTDOWN LIT 1 243 PC! ;\r"
-        " HEX 0 CONSTANT TTY"
-        " 6 CONSTANT TIMER"
-        " C CONSTANT KB"
-        " 10 CONSTANT VIDEO"
-        " 20 CONSTANT TPS"
-        " 26 CONSTANT HCS\r"
-        " 0 CONSTANT TPS/A"
-        " 1 CONSTANT TPS/B"
-        " 0 CONSTANT HCS/A"
-        " 1 CONSTANT HCS/B"
-        " 2 CONSTANT HCS/C"
-        " 4 CONSTANT HCS/D"
-        " DECIMAL"
+#include "initscript2.h"
         "\r";
 
+int    script = 0;
+char **scripts;
 /******************************************************************************/
-
+void        tell(const char *);
 extern void txtmod_putc(char c);
 /* The primary data output function. This is the place to change if you want
  * to e.g. output data on a microcontroller via a serial interface. */
@@ -315,7 +110,10 @@ int llkey()
                 return *(initscript_pos++);
         }
         c = _getchar();
-        putkey(c);
+        if (c != 0xd)
+                putkey(c);
+        else
+                putkey(' ');
         return c;
 }
 
@@ -325,14 +123,77 @@ int keyWaiting()
         return positionInLineBuffer < charsInLineBuffer ? -1 : 0;
 }
 
+void diskio();
+void from_screen(scell line)
+{
+        int  i;
+        cell screen = hw_lhud(1072);
+        cell offset = hw_lhud(1080);
+        cell block  = screen * 2 + offset + 1 + (line >= 4 ? 1 : 0);
+        cell addr   = 0;
+
+        supress_ok = 1;
+
+        for (i = 0; i < BLOCK_BUFFERS * 2; i += 2) {
+                if ((sbuf[i] & 0x7fff) == (block & 0x7fff)) {
+                        addr = sbuf[i + 1];
+                        break;
+                }
+        }
+
+        if (!addr) {
+                hw_shd(1068, 1);
+                for (i = 0; i < BLOCK_BUFFERS * 2; i += 2) {
+                        if (sbuf[i] == 0) {
+                                sbuf[i] = block & 0x7fff;
+                                addr    = sbuf[i + 1];
+                                hw_shd(1056, addr);
+                                hw_shd(1064, block - 1);
+                                diskio();
+                                break;
+                        }
+                }
+        }
+
+        if (!addr) {
+                errorFlag = 1;
+                tell("Error: buffers full\n");
+                return;
+        }
+
+        if (line >= 4)
+                addr += (line - 4) * 128;
+        else
+                addr += line * 128;
+
+        hw_copy(&memory[addr], lineBuffer, 128);
+        positionInLineBuffer = 0;
+        charsInLineBuffer    = 128;
+
+        line++;
+        if (line == 8) {
+                supress_ok = 0;
+                line       = -1;
+        }
+
+        hw_shd(1076, (unsigned)line);
+}
+
 /* Line buffered character input. We're duplicating the functionality of the
  * stdio library here to make the code easier to port to other input sources */
 int getkey()
 {
-        int c;
+        int   c;
+        scell line = hw_lhd(1076);
 
+keywait:
         if (keyWaiting())
                 return lineBuffer[positionInLineBuffer++];
+
+        if (line >= 0) {
+                from_screen(line);
+                goto keywait;
+        }
 
         charsInLineBuffer = 0;
         while ((c = llkey()) != EOF) {
@@ -456,12 +317,13 @@ byte readWord()
         char *line = (char *)memory;
         byte  len  = 0;
         int   c;
+        byte  separator = hw_lbud(1084);
 
         while ((c = getkey()) != EOF) {
                 if (c == ' ')
                         continue;
                 if (c == LN)
-                        continue;
+                        break;
                 if (c != '\\')
                         break;
 
@@ -470,13 +332,14 @@ byte readWord()
                                 break;
         }
 
-        while (c != ' ' && c != LN && c != EOF) {
+        while (c != separator && c != LN && c != EOF) {
                 if (len >= (INPUT_LINE_SIZE - 1))
                         break;
                 line[++len] = c;
                 c           = getkey();
         }
         line[0] = len;
+        hw_sbd(1084, ' ');
         return len;
 }
 
@@ -507,6 +370,9 @@ cell findWord(cell address, cell len)
         char *name = (char *)&memory[address];
         cell  i;
         int   found;
+
+        if (len == 0)
+                return 0;
 
         for (ret = *latest; ret; ret = readMem(ret)) {
                 if ((memory[ret + CELL_SIZE] & MASK_NAMELENGTH) != len)
@@ -809,8 +675,8 @@ BUILTIN(38, "QUIT", quit, 0)
         int   i;
         byte  isDouble;
         cell  tmp[2];
-
-        int immediate;
+        int   immediate;
+        byte  prev_color;
 
         for (exitReq = 0; exitReq == 0;) {
                 lastIp = next = quit_address;
@@ -850,6 +716,8 @@ BUILTIN(38, "QUIT", quit, 0)
                         }
 
                 } else {
+                        if (memory[0] == 0 /*len*/)
+                                goto end;
                         parseNumber(&memory[1], memory[0], &number, &notRead,
                                     &isDouble);
                         if (notRead) {
@@ -886,10 +754,15 @@ BUILTIN(38, "QUIT", quit, 0)
                         }
                 }
 
+end:
                 if (errorFlag)
                         *sp = *rsp = 1;
-                else if (!keyWaiting() && !(*initscript_pos))
-                        tell(" ok\n");
+                else if (!keyWaiting() && !(*initscript_pos) && !supress_ok) {
+                        prev_color = terminal_ctx[3];
+                        terminal_ctx[3] &= 0xf7;
+                        tell("  ok\n");
+                        terminal_ctx[3] = prev_color;
+                }
         }
 }
 
@@ -1231,7 +1104,7 @@ BUILTIN(80, "HCS/STORE", hcsStore, 0)
         cell sector = pop();
         cell hcs    = pop();
 
-        hcs_store_driver(hcs, (byte)sector, &memory[buffer]);
+        hcs_store_driver(hcs, sector, &memory[buffer]);
 }
 
 BUILTIN(81, "U/MOD", udivmod, 0)
@@ -1361,6 +1234,148 @@ BUILTIN(94, "SYSOFFSET", sysOffset, 0)
         dpush((dcell)&memory);
 }
 
+BUILTIN(95, "DISK/IO", diskio, 0)
+{
+        char s[4];
+        cell target    = hw_lhud(1056);
+        cell drive     = hw_lhud(1060);
+        cell sector    = hw_lhud(1064);
+        cell operation = hw_lhud(1068);
+
+        if (drive < 2) {
+                /* tps */
+                if (sector > 255) {
+                        tell("Disk Error: Sector out of bounds ");
+                        n2s(sector, s);
+                        tell(s);
+                        tell("\n");
+                        errorFlag = 1;
+                }
+                if (operation) {
+                        tps_load_driver(drive, sector, &memory[target]);
+                } else {
+                        tps_store_driver(drive, sector, &memory[target]);
+                }
+        } else if (drive == 2) {
+                /* hcs */
+                drive  = sector / 0xffff;
+                sector = sector - (0xffff * drive) - drive;
+
+                if (drive > 3 || sector > 0xffff) {
+                        tell("Disk error: No such sector");
+                        errorFlag = 1;
+                }
+
+                if (operation) {
+                        hcs_load_driver(drive, sector, &memory[target]);
+                } else {
+                        hcs_store_driver(drive, sector, &memory[target]);
+                }
+        } else {
+                tell("Disk Error: No such drive");
+                errorFlag = 1;
+        }
+}
+
+BUILTIN(96, "SBUF", doSbuf, 0)
+{
+        push(SBUF_POSITION);
+}
+
+BUILTIN(97, "RESIDENT", resident, 0)
+{
+        cell block = tos();
+        int  i;
+
+        for (i = 0; i < BLOCK_BUFFERS * 2; i += 2) {
+                if ((sbuf[i] & 0x7fff) == (block & 0x7fff)) {
+                        push(sbuf[i + 1]);
+                        push(0);
+                        return;
+                }
+        }
+
+        push(-1);
+}
+
+BUILTIN(98, "BUFFER", buffer, 0)
+{
+        cell block = tos();
+        int  i;
+        for (i = 0; i < BLOCK_BUFFERS * 2; i += 2) {
+                if (sbuf[i] == 0) {
+                        sbuf[i] = block & 0x7fff;
+                        push(sbuf[i + 1]);
+                        return;
+                }
+        }
+        errorFlag = 1;
+        tell("Error: buffers full\n");
+}
+
+BUILTIN(99, "UPDATE", update, 0)
+{
+        cell addr = tos();
+
+        if (addr < BLOCK_BUFF_ADDR)
+                return;
+        addr = (addr - BLOCK_BUFF_ADDR) / 512;
+        sbuf[addr * 2] |= 0x8000;
+}
+
+BUILTIN(100, "2BUFFER", twoBuffer, 0)
+{
+        cell block = pop();
+        int  i;
+        for (i = 0; i < (BLOCK_BUFFERS - 1) * 2; i += 2) {
+                if ((sbuf[i] == 0) && (sbuf[i + 2] == 0)) {
+                        sbuf[i]     = block & 0x7fff;
+                        sbuf[i + 2] = (block + 1) & 0x7fff;
+                        push(block + 1);
+                        push(sbuf[i + 3]);
+                        push(block);
+                        push(sbuf[i + 1]);
+                        return;
+                }
+        }
+        errorFlag = 1;
+        tell("Error: no consecutive buffers\n");
+}
+
+extern void txtmod_setpos(unsigned char, unsigned char);
+BUILTIN(101, "ATXY", atxy, 0)
+{
+        cell x     = pop() & 0xff;
+        cell y     = pop() & 0xff;
+        supress_ok = 1;
+        txtmod_setpos(x, y);
+}
+
+BUILTIN(102, "TERMINAL", terminal, 0)
+{
+        dpush((dcell)&terminal_ctx);
+}
+
+BUILTIN(103, "ABORT", abort, 0)
+{
+        errorFlag = 1;
+        tell("Abort\n");
+}
+
+BUILTIN(104, "FILL", fill, 0)
+{
+        cell c    = pop();
+        cell u    = pop();
+        cell addr = pop();
+        hw_fill(&memory[addr], u, c);
+}
+
+BUILTIN(105, "OK!", setOk, 0)
+{
+        cell c     = pop();
+        supress_ok = c;
+}
+
 /*******************************************************************************
  *
  * Loose ends
@@ -1436,6 +1451,11 @@ int main()
                 return 1;
         }
 
+        /*        scripts[0] = (char *)initScript;
+               scripts[1] = (char *)initScript2;
+               scripts[2] = (char *)blocksScript;
+               scripts[3] = 0; */
+
         state  = (cell *)&memory[STATE_POSITION];
         base   = (cell *)&memory[BASE_POSITION];
         latest = (cell *)&memory[LATEST_POSITION];
@@ -1444,12 +1464,25 @@ int main()
         stack  = (cell *)&memory[STACK_POSITION + CELL_SIZE];
         rsp    = (cell *)&memory[RSTACK_POSITION];
         rstack = (cell *)&memory[RSTACK_POSITION + CELL_SIZE];
+        sbuf   = (cell *)&memory[SBUF_POSITION];
 
         *sp = *rsp = 1;
         *state     = 0;
         *base      = 10;
         *latest    = 0;
         *here      = HERE_START;
+
+        hw_shd(1076, -1);
+        hw_sbd(1084, ' ');
+
+        sbuf[1]  = BLOCK_BUFF_ADDR;
+        sbuf[3]  = BLOCK_BUFF_ADDR + BLOCK_BUFF_SIZE * 1;
+        sbuf[5]  = BLOCK_BUFF_ADDR + BLOCK_BUFF_SIZE * 2;
+        sbuf[7]  = BLOCK_BUFF_ADDR + BLOCK_BUFF_SIZE * 3;
+        sbuf[9]  = BLOCK_BUFF_ADDR + BLOCK_BUFF_SIZE * 4;
+        sbuf[11] = BLOCK_BUFF_ADDR + BLOCK_BUFF_SIZE * 5;
+        sbuf[13] = BLOCK_BUFF_ADDR + BLOCK_BUFF_SIZE * 6;
+        sbuf[15] = BLOCK_BUFF_ADDR + BLOCK_BUFF_SIZE * 7;
 
         ADD_BUILTIN(docol);
         ADD_BUILTIN(doCellSize);
@@ -1547,6 +1580,17 @@ int main()
         ADD_BUILTIN(cmoveUp);
         ADD_BUILTIN(sysCmoveUp);
         ADD_BUILTIN(sysOffset);
+        ADD_BUILTIN(diskio);
+        ADD_BUILTIN(doSbuf);
+        ADD_BUILTIN(resident);
+        ADD_BUILTIN(buffer);
+        ADD_BUILTIN(update);
+        ADD_BUILTIN(twoBuffer);
+        ADD_BUILTIN(atxy);
+        ADD_BUILTIN(terminal);
+        ADD_BUILTIN(abort);
+        ADD_BUILTIN(fill);
+        ADD_BUILTIN(setOk);
 
         maxBuiltinAddress = (*here) - 1;
 

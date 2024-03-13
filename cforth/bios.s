@@ -4,7 +4,7 @@ _start:
                                 ; priority 2, ivt at 0xf800, pdt at 0xff00
         jal x1, INITIALIZE_IVT
 
-        li x10, 0
+        li x10, 5
         sbd x10, 0x11(x0)
         li x5, 2
         sbd x5, 0x10(x0)
@@ -44,10 +44,21 @@ hw_copy:
 	copy x12, x13, x14
 	ret
 
+.extern hw_fill
+hw_fill:
+	fill x12, x13, x14
+	ret
+
 # unsigned short hw_lhud(unsigned short address);
 .extern hw_lhud
 hw_lhud:
 	lhud x10, 0(x12)
+	ret
+
+# signed short hw_lhd(unsigned short address);
+.extern hw_lhd
+hw_lhd:
+	lhd x10, 0(x12)
 	ret
 
 # byte hw_lbud(unsigned short address);

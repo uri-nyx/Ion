@@ -22,17 +22,23 @@ typedef unsigned long u32;
 extern void hw_copy(const void *src, const void *dest, usize size);
 
 /* CONFIGURATION */
-#define BPC      1
-#define MODE     TXTMOD_SIMPLE
+#define BPC      2
+#define MODE     TXTMOD_COMBINED
 #define SCREEN   ((u8 *)CHARBUFFER_ADDR)
 #define ROWS     25
 #define COLS     80
 #define TABSZ    8
-#define CURSOR   '|'
-#define BGCOLOR  0
 #define CR_AS_LN 1 /* To interpret CR as a newline (useful for freestanding)*/
 
-int        scroll_lock  = 0;
+int scroll_lock = 0;
+
+u8 terminal_ctx[] = { 0x8f, 0x0f, '|', 0x0f };
+
+#define cursoratt terminal_ctx[0]
+#define BGCOLOR   terminal_ctx[1]
+#define CURSOR    terminal_ctx[2]
+#define color     terminal_ctx[3]
+
 static int erase_cursor = 0;
 static int prev_cursor  = 0;
 static u8  row          = 0;
@@ -45,11 +51,12 @@ static void update_cursor()
         cursor = BPC * (row * COLS + col);
 
 #if (MODE == TXTMOD_COMBINED || MODE == TXTMOD_RTEXT)
-        if (erase_cursor)
+        if (erase_cursor) {
                 SCREEN[prev_cursor + 1] = color;
-        SCREEN[prev_cursor] = ' ';
-        SCREEN[cursor + 1]  = cursoratt;
-        SCREEN[cursor]      = CURSOR;
+                SCREEN[prev_cursor]     = ' ';
+        }
+        SCREEN[cursor + 1] = cursoratt;
+        SCREEN[cursor]     = CURSOR;
 
 #elif (MODE == TXTMOD_SIMPLE)
         if (erase_cursor)
@@ -59,6 +66,14 @@ static void update_cursor()
 
         erase_cursor = 0;
         prev_cursor  = cursor;
+}
+
+void txtmod_setpos(u8 r, u8 c)
+{
+        row          = r < ROWS ? r : row;
+        col          = c < COLS ? c : col;
+        erase_cursor = 1;
+        update_cursor();
 }
 
 /* TODO: In assembly (using fill) */
@@ -131,7 +146,6 @@ void txtmod_putc(char c)
         if (c == 0x09) {
                 erase_cursor = 1;
                 col          = (col + TABSZ) & ~(TABSZ - 1);
-                SCREEN[col] = '\t';
         }
 
         /*  // Handle carriage return */
